@@ -1,0 +1,14 @@
+{
+  "name": "mdcalendar",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "./bin/updateREADME.sh"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "glob": "^7.1.6"
+  }
+}

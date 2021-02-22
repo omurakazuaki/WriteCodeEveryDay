@@ -1,7 +1,3 @@
-import { stdin } from 'process';
-import * as readLine from 'readline';
-import { preProcessFile } from 'typescript';
-
 type Write = (char: number) => void;
 type Read = () => Promise<number>;
 
@@ -81,7 +77,7 @@ export class Brainfuck {
     const commands = Object.values(this.opt.commands);
     for (let ptr = 0, i = 0; code[i];) {
       const currentCode = code.slice(i);
-      const command = commands.find(c => currentCode.indexOf(c) === 0);
+      const command = commands.find(c => currentCode.startsWith(c));
       if (command === this.opt.commands.opn) {
         if (memory[ptr] !== 0) {
           jumpPoints.push(i);

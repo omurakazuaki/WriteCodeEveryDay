@@ -3,7 +3,7 @@
 ## run
 
 ```sh
-npm run bf ./bf/hello.b
+npm run bf ./bf/hello.bf
 ```
 
 ```sh
