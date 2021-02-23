@@ -4,7 +4,7 @@
   "description": "## Calendar ### 2021",
   "main": "index.js",
   "scripts": {
-    "husky:update-readme": "./bin/updateREADME.sh && git add -A && git cm -m \"Update README\""
+    "husky:update-readme": "./bin/updateREADME.sh && git add -A && git commit -m \"Update README\""
   },
   "repository": {
     "type": "git",
