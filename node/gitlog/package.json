@@ -1,12 +1,14 @@
 {
-  "name": "mdcalendar",
+  "name": "gitlog",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "./bin/updateREADME.sh"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC",
-  "dependencies": {}
+  "dependencies": {
+    "glob": "^7.1.6"
+  }
 }

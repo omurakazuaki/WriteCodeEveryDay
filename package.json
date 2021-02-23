@@ -1,0 +1,22 @@
+{
+  "name": "writecodeeveryday",
+  "version": "1.0.0",
+  "description": "## Calendar ### 2021",
+  "main": "index.js",
+  "scripts": {
+    "husky:update-readme": "./bin/updateREADME.sh && git add -A && git cm -m \"Update README\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/omurakazuaki/WriteCodeEveryDay.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/omurakazuaki/WriteCodeEveryDay/issues"
+  },
+  "homepage": "https://github.com/omurakazuaki/WriteCodeEveryDay#readme",
+  "devDependencies": {
+    "husky": "^5.1.1"
+  }
+}

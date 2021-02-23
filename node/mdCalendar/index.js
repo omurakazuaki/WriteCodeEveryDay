@@ -1,28 +1,41 @@
-const glob = require('glob');
+const path = require('path');
 
-const args = process.argv.slice(2);
-const targetFilePattern = args.shift();
+const readStdIn = () => {
+  return new Promise((resolve, _) => {
+    let buffer = '';
+    process.stdin
+      .resume()
+      .setEncoding('utf8')
+      .on('readable', () => {
+        while ((chunk = process.stdin.read()) !== null) {
+          buffer += chunk;
+        }
+      })
+      .on('end', () => resolve(buffer));
+  });
+};
 
-glob.glob(targetFilePattern, (_, files) => {
-  const calendars = files.sort().map(f => {
-    const [_, year, month] = f.match(/\/([0-9]{4})\/([0-9]{2})\//);
-    const lastDay = new Date(year, month, 0);
-    const data = require(f);
-    const calender = new Array(lastDay.getDate()).fill(null).map((_, i) => {
-      return {day: i + 1, title: data[i + 1] || '-'};
-    });
-    const blankTail = 6 - lastDay.getDay();
-    const blankHead = 7 - (lastDay.getDate() + blankTail) % 7;
-    calender.unshift(...new Array(blankHead).fill(null));
-    calender.push(...new Array(blankTail).fill(null));
+(async () => {
+  const rawData = JSON.parse(await readStdIn());
 
-    return { year, month, calender }
-  }).reduce((result, data) => {
-    if (!result[data.year]) {
-      result[data.year] = [];
+  const calendars = Object.keys(rawData).reduce((acc, dateAsStr) => {
+    const [year, month, date] = dateAsStr.split('-');
+    if (!acc[year]) {
+      acc[year] = [];
     }
-    result[data.year][Number(data.month)] = data.calender;
-    return result;
+    if (!acc[year][Number(month)]) {
+      const lastDay = new Date(year, month, 0);
+      const calendar = new Array(lastDay.getDate()).fill(null).map((_, i) => {
+        return '-';
+      });
+      const blankTail = 6 - lastDay.getDay();
+      const blankHead = 7 - (lastDay.getDate() + blankTail) % 7;
+      calendar.unshift(...new Array(blankHead).fill(null));
+      calendar.push(...new Array(blankTail).fill(null));
+      acc[year][Number(month)] = calendar;
+    }
+    acc[year][Number(month)][Number(date)] = rawData[dateAsStr].map(log=>`[${log.message}](${path.dirname(log.file)})`).join('<br>');
+    return acc;
   }, {});
 
   const chunk = ([...array], size = 1) => {
@@ -36,11 +49,11 @@ glob.glob(targetFilePattern, (_, files) => {
         mdYear += '#### ' + i + '\n'
          + '|Sun|Mon|Tue|Wed|Thu|Fri|Sat|\n'
          + '|-|-|-|-|-|-|-|\n'
-         + [...chunk(month.map(date => date ? date.day + (date.title != '-' ? ' 🍺' : '') + '<br>' + date.title : '-'), 7), '']
+         + [...chunk(month.map((date, i) => date ? `${i}${date !== '-' ? ' 🍺' : ''}<br>${date}` : '-'), 7), '']
           .map(week => ['', ...week].join('|')).join('|\n') + '\n';
       }
       return mdYear;
     }, md);
   }, '');
   console.log(markDown);
-});
+})();
