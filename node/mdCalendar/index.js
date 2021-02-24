@@ -1,22 +1,10 @@
 const path = require('path');
+const readStdin = require('../libs/readStdin');
 
-const readStdIn = () => {
-  return new Promise((resolve, _) => {
-    let buffer = '';
-    process.stdin
-      .resume()
-      .setEncoding('utf8')
-      .on('readable', () => {
-        while ((chunk = process.stdin.read()) !== null) {
-          buffer += chunk;
-        }
-      })
-      .on('end', () => resolve(buffer));
-  });
-};
+const header = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 
 (async () => {
-  const rawData = JSON.parse(await readStdIn());
+  const rawData = JSON.parse(await readStdin());
 
   const calendars = Object.keys(rawData).reduce((acc, dateAsStr) => {
     const [year, month, date] = dateAsStr.split('-');
@@ -46,11 +34,13 @@ const readStdIn = () => {
     md += '### ' + year + '\n\n';
     return calendars[year].reduce((mdYear, month, i) => {
       if (month) {
-        mdYear += '#### ' + i + '\n'
-         + '|Sun|Mon|Tue|Wed|Thu|Fri|Sat|\n'
-         + '|-|-|-|-|-|-|-|\n'
-         + [...chunk(month.map((date, i) => date ? `${i}${date !== '-' ? ' 🍺' : ''}<br>${date}` : '-'), 7), '']
-          .map(week => ['', ...week].join('|')).join('|\n') + '\n';
+        mdYear += [
+          `#### ${i}`,
+          header.join('|'),
+          header.map(_=>'-').join('|'),
+          ...chunk(month.map((date, i) => date ? `${i}${date !== '-' ? ' 🍺' : ''}<br>${date}` : '-'), header.length)
+          .map(week => [...week].join('|'))
+        ].join('\n') + '\n';
       }
       return mdYear;
     }, md);
