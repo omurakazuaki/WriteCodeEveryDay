@@ -12,8 +12,7 @@ const protocol = 'https';
     process.exit(1);
   }
   const git = new Git(absoluteTarget);
-  const ref = git.head();
-  const hash = ref.startsWith('ref: ') ? git.hash(ref.replace('ref: ', '')) : ref;
+  const hash = git.hash();
   const config = git.config();
   const githubUrl = config.remote.origin.url;
   const githubWebUrl = githubUrl.replace(/^(ssh|https):\/\/(git@)?(.+)\.git$/, '$3');

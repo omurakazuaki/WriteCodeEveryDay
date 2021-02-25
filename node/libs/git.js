@@ -51,14 +51,18 @@ module.exports = class Git {
       .trim();
   }
 
-  hash(ref) {
-    const refFile = path.join(this.gitDir, ref);
-    if (!fs.existsSync(refFile)) {
-      return undefined;
+  hash(ref=this.head()) {
+    if (ref.startsWith('ref: ')) {
+      const refFile = path.join(this.gitDir, ref.replace('ref: ', ''));
+      if (!fs.existsSync(refFile)) {
+        return undefined;
+      }
+      return this.hash(fs.readFileSync(refFile)
+        .toString()
+        .trim());
+    } else {
+      return ref;
     }
-    return fs.readFileSync(refFile)
-      .toString()
-      .trim();
   }
 
   config() {
@@ -80,18 +84,20 @@ module.exports = class Git {
         }
         return acc;
       }, [])
-      .reduce((acc, l) => {
-        const section = l.section;
-        const subSection = l.subSection;
-        delete(l.section);
-        delete(l.subSection);
-        if (!acc[section]) {
-          acc[section] = {};
+      .reduce((acc, obj) => {
+        const keyValues = Object.keys(obj)
+          .filter(k => !['section', 'subSection'].includes(k))
+          .reduce((kv, k) => {
+            kv[k] = obj[k];
+            return kv;
+          }, {});
+        if (!acc[obj.section]) {
+          acc[obj.section] = {};
         }
-        if (subSection) {
-          acc[section][subSection] = l;
+        if (obj.subSection) {
+          acc[obj.section][obj.subSection] = keyValues;
         } else {
-          acc[section] = l;
+          acc[obj.section] = keyValues;
         }
         return acc;
       }, {})
