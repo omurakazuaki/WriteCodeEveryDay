@@ -1,22 +1,17 @@
 const glob = require('glob');
-const { exec } = require('child_process');
-const util = require('util');
+const Git = require('../libs/git');
 
 const args = process.argv.slice(2);
 const target = args.shift() || '.';
-
-execAsync = util.promisify(exec);
+const git = new Git();
 
 glob.glob(target, (_, files) => {
   Promise.all(
-    files.map(f => execAsync(
-      `git --no-pager log --reverse --pretty=format:'{"hash": "%h", "message": "%s", "date": "%ad", "file": "${f}"}' --date=format:'%Y-%m-%d' "${f}"`
-    ))
+    files.map(f => git.log(f))
   ).then(result => console.log(JSON.stringify(
     result
-      .map(r=>r.stdout.toString().split('\n')[0])
-      .filter(log=>log)
-      .map(log => JSON.parse(log))
+      .filter(logs=>logs)
+      .map(logs=>logs.pop())
       .reduce((acc, log) => {
         if (!acc[log.date]) {
           acc[log.date] = [];

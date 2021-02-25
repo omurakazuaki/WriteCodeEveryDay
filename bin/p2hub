@@ -1,0 +1,6 @@
+#!/bin/bash
+
+CURRENT=$(cd $(dirname $0);pwd)
+PWD=$(pwd)
+
+cd $PWD && node $CURRENT/../node/path2hub/index.js $1
