@@ -11,6 +11,7 @@ const protocol = 'https';
   if (!fs.existsSync(absoluteTarget)) {
     process.exit(1);
   }
+  const type = fs.statSync(absoluteTarget).isFile() ? 'blob' : 'tree';
   const git = new Git(absoluteTarget);
   const hash = git.hash();
   const config = git.config();
@@ -18,8 +19,10 @@ const protocol = 'https';
   const githubWebUrl = githubUrl.replace(/^(ssh|https):\/\/(git@)?(.+)\.git$/, '$3');
   const topLevel = path.dirname(git.gitDir);
   const filePath = encodeURI(absoluteTarget.replace(topLevel, ''));
-  console.log(`${protocol}://${path.join(githubWebUrl, 'blob', hash, filePath)}`);
-  console.log(`${protocol}://${path.join(githubWebUrl, 'blame', hash, filePath)}`);
+  console.log(`${protocol}://${path.join(githubWebUrl, type, hash, filePath)}`);
+  if (type === 'blob') {
+    console.log(`${protocol}://${path.join(githubWebUrl, 'blame', hash, filePath)}`);
+  }
   //console.log(`${protocol}://${path.join(githubWebUrl, 'commits', hash, filePath)}`);
 })();
 

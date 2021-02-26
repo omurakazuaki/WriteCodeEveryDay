@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const util = require('util');
 const { exec } = require('child_process');
+const crypto = require('crypto');
 const zlib = require('zlib');
 
 const execAsync = util.promisify(exec);
@@ -18,8 +19,8 @@ module.exports = class Git {
   static findGitDir(targetDir) {
     const absoluteTarget = path.resolve(targetDir);
     const parentDir = path.dirname(absoluteTarget);
-    if (targetDir == '.' || targetDir == '/') {
-      return null;
+    if (absoluteTarget === parentDir) {
+      throw new Error(`.git was not found`);
     } else if (fs.statSync(absoluteTarget).isFile()) {
       return Git.findGitDir(parentDir);
     } else {
@@ -99,9 +100,16 @@ module.exports = class Git {
           content: type === 'commit' ? Git.parseCommitObject(contentByteArray)
                  : type === 'tree'   ? Git.parseTreeObject(contentByteArray)
                  : type === 'blob'   ? contentByteArray.toString()
-                 : undefined
+                 : undefined,
+          raw: buff
         };
       });
+  }
+
+  toHash(obj) {
+    const shasum = crypto.createHash('sha1');
+    shasum.update(obj.raw);
+    return shasum.digest('hex')
   }
 
   commitObject(commitHash=this.hash()) {
@@ -161,20 +169,15 @@ module.exports = class Git {
   static parseTreeObject(contentByteArray) {
     // [mode] [file/folder name]\0[SHA-1 of referencing blob or tree]
     const entries = [];
-    for (let i = 0, used = 0; i < contentByteArray.length; i++) {
-      const b = contentByteArray[i];
-      if (b === 32) {
-        entries.push({
-          mode: contentByteArray.toString(undefined, used, i).padStart(6, '0')
-        });
-        used = i + 1;
-      } else if (b === 0) {
-        entries[entries.length-1].name = contentByteArray.toString(undefined, used, i);
-        used = i + 1;
-        i += 21;
-        entries[entries.length-1].hash = contentByteArray.toString('hex', used, i)
-        used = i;
-      }
+    for (let i = 0, endIndex = 0; i < contentByteArray.length; i = endIndex) {
+      const spIndex = contentByteArray.indexOf(32, i);
+      const nullIndex = contentByteArray.indexOf(0, spIndex + 1);
+      endIndex = nullIndex + 21;
+      entries.push({
+        mode: contentByteArray.toString(undefined, i, spIndex),
+        name: contentByteArray.toString(undefined, spIndex + 1, nullIndex),
+        hash: contentByteArray.toString('hex', nullIndex + 1, endIndex)
+      });
     }
     return entries;
   }

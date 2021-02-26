@@ -1,4 +1,4 @@
-# MarkDown Calendar
+# Git Hack
 
 ## Create the git instance
 ```js
