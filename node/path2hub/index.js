@@ -4,6 +4,8 @@ const Git = require('../libs/git');
 
 const args = process.argv.slice(2);
 const target = args.shift();
+const start = args.shift();
+const end = args.shift();
 const protocol = 'https';
 
 (async() => {
@@ -19,7 +21,8 @@ const protocol = 'https';
   const githubWebUrl = githubUrl.replace(/^(ssh|https):\/\/(git@)?(.+)\.git$/, '$3');
   const topLevel = path.dirname(git.gitDir);
   const filePath = encodeURI(absoluteTarget.replace(topLevel, ''));
-  console.log(`${protocol}://${path.join(githubWebUrl, type, hash, filePath)}`);
+  const anchor = start ? `#L${start}` + (end ? `-#L${end}` : '') : ''
+  console.log(`${protocol}://${path.join(githubWebUrl, type, hash, filePath)}${anchor}`);
   if (type === 'blob') {
     console.log(`${protocol}://${path.join(githubWebUrl, 'blame', hash, filePath)}`);
   }
