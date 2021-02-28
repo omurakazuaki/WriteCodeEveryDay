@@ -1,0 +1,17 @@
+{
+  "name": "json2html",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "mustache": "^4.1.0"
+  },
+  "devDependencies": {
+    "@types/mustache": "^4.1.1"
+  }
+}
