@@ -18,5 +18,8 @@
   "homepage": "https://github.com/omurakazuaki/WriteCodeEveryDay#readme",
   "devDependencies": {
     "husky": "^5.1.1"
+  },
+  "dependencies": {
+    "oclif": "^1.16.1"
   }
 }
