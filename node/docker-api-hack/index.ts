@@ -48,6 +48,13 @@ const request = (options: http.RequestOptions, data?) => {
       })
     );
     console.log(container.toString());
+    const containerId = JSON.parse(container.toString()).Id;
+
+    const start = await request({method: 'POST', path: `/containers/${containerId}/start`});
+    console.log(start.toString());
+
+    const logs = await request({method: 'GET', path: `/containers/${containerId}/logs?stdout="true"`});
+    console.log(logs.toString());
 
   } catch(e) {
     console.error(e);
