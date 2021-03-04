@@ -2,8 +2,8 @@
 
 ## Continuous Commit Recording
 
-- 🥇 Highest record: **10** days
-- 😊 Latest record: **10** days ( **20** days to reach 🎉**30** days anniversary )
+- 🥇 Highest record: **11** days
+- 😊 Latest record: **11** days ( **19** days to reach 🎉**30** days anniversary )
 
 ## Commit Calendar
 
@@ -20,7 +20,7 @@ Sun|Mon|Tue|Wed|Thu|Fri|Sat
 #### 3
 Sun|Mon|Tue|Wed|Thu|Fri|Sat
 -|-|-|-|-|-|-
--|1 🍺<br>[json2html](./node/json2html)|2 🍺<br>[p2hub vsce](./node/path2GithubVsce)|3 🍺<br>[docker-api-hack](./node/docker-api-hack)|4<br>-|5<br>-|6<br>-
+-|1 🍺<br>[json2html](./node/json2html)|2 🍺<br>[p2hub vsce](./node/path2GithubVsce)|3 🍺<br>[docker-api-hack](./node/docker-api-hack)|4 🍺<br>[graphql getting started](./node/graphql-getting-started)|5<br>-|6<br>-
 7<br>-|8<br>-|9<br>-|10<br>-|11<br>-|12<br>-|13<br>-
 14<br>-|15<br>-|16<br>-|17<br>-|18<br>-|19<br>-|20<br>-
 21<br>-|22<br>-|23<br>-|24<br>-|25<br>-|26<br>-|27<br>-
