@@ -1,6 +1,6 @@
 import express from 'express';
 import { graphqlHTTP } from 'express-graphql';
-import { blogSchema } from './schema/blog';
+import { loadSchema } from './schema/loader';
 import { blogResolvers } from './resolver/blog';
 import logger from 'morgan';
 
@@ -9,7 +9,7 @@ app.use(logger('default'));
 app.use(
   '/blog',
   graphqlHTTP({
-    schema: blogSchema,
+    schema: loadSchema('blog'),
     rootValue: blogResolvers,
     graphiql: true
   })

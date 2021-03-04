@@ -1,6 +1,3 @@
-import { buildSchema } from 'graphql';
-
-export const blogSchema = buildSchema(`
 type Query {
   users: [User!]!,
   user(id: Int!): User!,
@@ -29,4 +26,3 @@ type Post {
   link: String
   author: User!
 }
-`);
