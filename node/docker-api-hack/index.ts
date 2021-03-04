@@ -1,7 +1,9 @@
 import * as http from 'http';
+import { Readable } from 'stream';
 import * as tar from 'tar';
+import * as path from 'path';
 
-const request = (options: http.RequestOptions, data?) => {
+const request = (options: http.RequestOptions, data?: Readable | string) => {
   const opt: http.RequestOptions = Object.assign({
     socketPath: '/var/run/docker.sock',
     headers: {
@@ -9,7 +11,7 @@ const request = (options: http.RequestOptions, data?) => {
       'Host': 'localhost'
     }
   }, options);
-  if (data && !data.pipe) {
+  if (typeof data === 'string') {
     opt.headers['Content-Length'] = Buffer.byteLength(data);
   }
   return new Promise<string[]>((resolve, reject) => {
@@ -23,11 +25,11 @@ const request = (options: http.RequestOptions, data?) => {
       })
     });
     req.on('error', e => reject(e));
-    if (data?.pipe) {
+    if (typeof data === 'string') {
+      req.write(data);
+    } else if (data) {
       data.pipe(req);
       return;
-    } else if (data) {
-      req.write(data);
     }
     req.end();
   });
@@ -35,7 +37,7 @@ const request = (options: http.RequestOptions, data?) => {
 
 (async() => {
   try {
-    const packed = tar.c({gzip: true}, ['Dockerfile']);
+    const packed = tar.c({gzip: true, cwd: __dirname}, ['Dockerfile']);
     const tag = 'test';
     const build = await request({method: 'POST', path: `/build?t=${tag}`}, packed);
     console.log(build.toString());
@@ -43,19 +45,32 @@ const request = (options: http.RequestOptions, data?) => {
     const images = await request({method: 'GET', path: '/images/json'});
     console.log(images.toString());
 
-    const container = await request({method: 'POST', path: `/containers/create`}, JSON.stringify({
-        Image: tag
+    const containerName = 'test_container';
+    const container = await request({method: 'POST', path: `/containers/create?name=${containerName}`}, JSON.stringify({
+        Image: tag,
+        Cmd: ['bf', '/bf/hello.bf'],
+        HostConfig: {
+          Mounts: [
+            {
+              Type: 'bind',
+              Source: path.resolve(path.join(__dirname, '../brainfuck/bf')),
+              Target: '/bf',
+              ReadOnly: true
+            }
+          ]
+        }
       })
     );
     console.log(container.toString());
-    const containerId = JSON.parse(container.toString()).Id;
 
-    const start = await request({method: 'POST', path: `/containers/${containerId}/start`});
+    const start = await request({method: 'POST', path: `/containers/${containerName}/start`});
     console.log(start.toString());
 
-    const logs = await request({method: 'GET', path: `/containers/${containerId}/logs?stdout="true"`});
+    const logs = await request({method: 'GET', path: `/containers/${containerName}/logs?stdout="true"`});
     console.log(logs.toString());
 
+    const remove = await request({method: 'DELETE', path: `/containers/${containerName}`});
+    console.log(remove.toString());
   } catch(e) {
     console.error(e);
   }
