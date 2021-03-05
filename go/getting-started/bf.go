@@ -14,21 +14,21 @@ func run(code *[]byte) *[]int8 {
 	ptr := 0
 	jumps := []int{}
 	skips := []int{}
-	stdinBuff := []byte{}
-	read := 0
+	read := readStdin()
+	index := 0
 	for {
-		command := (*code)[read]
+		command := (*code)[index]
 		if command == 0 {
 			break
 		} else if command == '[' {
 			if memory[ptr] != 0 {
-				jumps = append(jumps, read)
+				jumps = append(jumps, index)
 			} else {
-				skips = append(skips, read)
+				skips = append(skips, index)
 			}
 		} else if command == ']' {
 			if len(skips) == 0 {
-				read = jumps[len(jumps)-1]
+				index = jumps[len(jumps)-1]
 				jumps = jumps[:len(jumps)-1]
 				continue
 			} else {
@@ -53,34 +53,37 @@ func run(code *[]byte) *[]int8 {
 		} else if command == '-' {
 			memory[ptr]--
 		} else if command == '.' {
-			writeStdin(memory[ptr])
+			writeStdout(memory[ptr])
 		} else if command == ',' {
-			memory[ptr] = readStdin(&stdinBuff)
+			memory[ptr] = read()
 		}
-		read++
+		index++
 	}
 	return &memory
 }
 
-func writeStdin(i int8) {
+func writeStdout(i int8) {
 	if i >= 0 {
 		fmt.Print(string(rune(i)))
 	}
 }
 
-func readStdin(buff *[]byte) int8 {
-	if len(*buff) == 0 {
-		stdin := bufio.NewScanner(os.Stdin)
-		for stdin.Scan() {
-			*buff = append(*buff, stdin.Bytes()...)
+func readStdin() func() int8 {
+	buff := []byte{}
+	return func() int8 {
+		if len(buff) == 0 {
+			stdin := bufio.NewScanner(os.Stdin)
+			for stdin.Scan() {
+				buff = append(buff, stdin.Bytes()...)
+			}
 		}
+		if len(buff) == 0 {
+			return -1
+		}
+		b := buff[0]
+		buff = buff[1:]
+		return int8(b)
 	}
-	if len(*buff) == 0 {
-		return -1
-	}
-	b := (*buff)[0]
-	*buff = (*buff)[1:]
-	return int8(b)
 }
 
 func readSource(filepath string) *[]byte {
@@ -89,7 +92,11 @@ func readSource(filepath string) *[]byte {
 		panic(err)
 	}
 	defer fp.Close()
-	buf := make([]byte, 1024*8)
+	stat, err := fp.Stat()
+	if err != nil {
+		panic(err)
+	}
+	buf := make([]byte, stat.Size()+1)
 	for {
 		n, err := fp.Read(buf)
 		if n == 0 {
