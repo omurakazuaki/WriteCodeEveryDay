@@ -1,5 +1,5 @@
 [package]
-name = "getting-started"
+name = "bf"
 version = "0.1.0"
 authors = ["omurakazuaki <omura@enrapt.jp>"]
 edition = "2018"

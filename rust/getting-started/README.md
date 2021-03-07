@@ -3,11 +3,11 @@
 ## build
 
 ```sh
-make build
+cargo build --release
 ```
 
 ## Run
 
 ```sh
-bin/bf ../../node/brainfuck/bf/hello.bf | bin/bf ../../node/brainfuck/bf/rot13.bf
+ ./target/release/bf ../../node/brainfuck/bf/hello.bf |  ./target/release/bf ../../node/brainfuck/bf/rot13.bf
 ```

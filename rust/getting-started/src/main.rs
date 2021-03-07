@@ -2,22 +2,20 @@ use std::env;
 use std::fs;
 use std::io;
 use std::io::Read;
-
-const MEMORY_SIZE: usize = 1024;
+use bf::memory::Memory;
 
 fn run(source: &str) {
     let tokens: Vec<char> = source.chars().collect();
-    let mut memory: [i8; MEMORY_SIZE] = [0; MEMORY_SIZE];
-    let mut ptr: usize = 0;
+    let mut memory: Memory = Memory::new();
     let mut jumps: Vec<usize> = vec![];
     let mut skips: Vec<usize> = vec![];
     let mut index: usize = 0;
-    let mut buff: Vec<i8> = vec![];
+    let mut read = stdin_reader();
     loop {
         match tokens.get(index) {
             None => break,
             Some('[') => {
-                if memory[ptr] != 0 {
+                if memory.get() != 0 {
                     jumps.push(index)
                 } else {
                     skips.push(index)
@@ -33,66 +31,57 @@ fn run(source: &str) {
             },
             Some('>') => {
                 if skips.is_empty() {
-                    if ptr < MEMORY_SIZE - 1 {
-                        ptr += 1;
-                    } else {
-                        ptr = 0;
-                    }
+                    memory.nxt();
                 }
             },
             Some('<') => {
                 if skips.is_empty() {
-                    if ptr > 0 {
-                        ptr -= 1;
-                    } else {
-                        ptr = MEMORY_SIZE - 1;
-                    }
+                    memory.prv();
                 }
             },
             Some('+') => {
                 if skips.is_empty() {
-                    if memory[ptr] < i8::MAX {
-                        memory[ptr] += 1;
-                    } else {
-                        memory[ptr] = i8::MIN;
-                    }
+                    memory.inc();
                 }
             },
             Some('-') => {
                 if skips.is_empty() {
-                    if memory[ptr] > i8::MIN {
-                        memory[ptr] -= 1;
-                    } else {
-                        memory[ptr] = i8::MAX;
-                    }
+                    memory.dec()
                 }
             },
             Some('.') => {
                 if skips.is_empty() {
-                    match std::char::from_u32(memory[ptr] as u32) {
+                    match std::char::from_u32(memory.get() as u32) {
                         None => {},
                         Some(c) => { print!("{}", c); }
                     }
                 }
             },
             Some(',') => {
-                if buff.is_empty() {
-                    for byte in io::stdin().bytes() {
-                        match byte {
-                            Ok(b) => buff.push(b as i8),
-                            Err(_) => buff.push(-1)
-                        }
-                    }
-                }
-                if buff.is_empty() {
-                    memory[ptr] = -1;
-                } else {
-                    memory[ptr] = buff.drain(0..1).as_slice()[0];
-                }
+                memory.put(read());
             }
             Some(_) => {}
         }
         index += 1;
+    }
+}
+
+fn stdin_reader() -> impl FnMut() -> i8 {
+    let mut buff: Vec<i8> = vec![];
+    move || -> i8 {
+        if buff.is_empty() {
+            for byte in io::stdin().bytes() {
+                match byte {
+                    Ok(b) => buff.push(b as i8),
+                    Err(_) => buff.push(-1)
+                }
+            }
+        }
+        if buff.is_empty() {
+            return -1;
+        } else {
+            return buff.drain(0..1).as_slice()[0];
+        }
     }
 }
 
