@@ -58,7 +58,9 @@ fn run(source: &str) {
                 }
             },
             Some(',') => {
-                memory.put(read());
+                if skips.is_empty() {
+                    memory.put(read());
+                }
             }
             Some(_) => {}
         }
