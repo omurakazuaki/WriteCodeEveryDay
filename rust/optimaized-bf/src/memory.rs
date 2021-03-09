@@ -23,8 +23,8 @@ impl Memory {
     self.put(self.get() as isize - 1);
   }
 
-  pub fn add(&mut self, val: i8) {
-    self.put(self.get() as isize + val as isize);
+  pub fn add(&mut self, val: isize) {
+    self.put(self.get() as isize + val);
   }
 
   pub fn mvv(&mut self, val: isize) {

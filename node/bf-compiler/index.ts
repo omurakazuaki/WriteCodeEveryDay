@@ -57,10 +57,11 @@ const commandMatchers: CommandMatcher[] = [
 ];
 
 const gen = (code: string): string[] => {
+  const oneLinerCode = code.replace(/\n/g, '');
   const steps: string[] = [];
   let nestCount = 0;
-  for (let i = 0; code[i];) {
-    const currentCode = code.slice(i);
+  for (let i = 0; oneLinerCode[i];) {
+    const currentCode = oneLinerCode.slice(i);
     const match = commandMatchers.map(matcher => matcher(currentCode)).find(m=>m);
     const nest = () => '    '.repeat(nestCount);
     if (match?.name === 'opn') {
