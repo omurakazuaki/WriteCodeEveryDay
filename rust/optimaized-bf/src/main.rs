@@ -49,13 +49,13 @@ fn run(source: &str) {
     }
 }
 
-fn stdin_reader() -> impl FnMut() -> i8 {
-    let mut buff: Vec<i8> = vec![];
-    move || -> i8 {
+fn stdin_reader() -> impl FnMut() -> isize {
+    let mut buff: Vec<isize> = vec![];
+    move || -> isize {
         if buff.is_empty() {
             for byte in io::stdin().bytes() {
                 match byte {
-                    Ok(b) => buff.push(b as i8),
+                    Ok(b) => buff.push(b as isize),
                     Err(_) => buff.push(-1)
                 }
             }

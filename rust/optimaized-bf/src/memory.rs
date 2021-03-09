@@ -16,29 +16,20 @@ impl Memory {
   }
 
   pub fn inc(&mut self) {
-    if self.get() < i8::MAX {
-        self.put(self.get() + 1);
-    } else {
-        self.put(i8::MIN);
-    }
+    self.put(self.get() as isize + 1);
   }
 
   pub fn dec(&mut self) {
-    if self.get() > i8::MIN {
-        self.put(self.get() - 1);
-    } else {
-        self.put(i8::MAX);
-    }
+    self.put(self.get() as isize - 1);
   }
 
   pub fn add(&mut self, val: i8) {
-    let mut new_val = self.get() + val;
-    if new_val > i8::MAX {
-      new_val = i8::MIN + new_val - i8::MAX;
-    } else if new_val < i8::MIN {
-      new_val = i8::MAX + new_val - i8::MIN;
-    }
-    self.put(new_val);
+    self.put(self.get() as isize + val as isize);
+  }
+
+  pub fn mvv(&mut self, val: isize) {
+    self.raw[add_ptr(self.ptr, val)] += self.raw[self.ptr];
+    self.raw[self.ptr] = 0;
   }
 
   pub fn nxt(&mut self) {
@@ -58,21 +49,21 @@ impl Memory {
   }
 
   pub fn mov(&mut self, val: isize) {
-    let mut new_val = add(self.ptr, val);
-    if new_val > (MEMORY_SIZE - 1) as isize {
-      new_val = new_val - MEMORY_SIZE  as isize;
-    } else if new_val < 0 {
-      new_val = MEMORY_SIZE as isize + new_val;
-    }
-    self.ptr = new_val as usize;
+    self.ptr = add_ptr(self.ptr, val);
   }
 
   pub fn get(&self) -> i8 {
     self.raw[self.ptr]
   }
 
-  pub fn put(&mut self, value: i8) {
-    self.raw[self.ptr] = value;
+  pub fn put(&mut self, value: isize) {
+    let mut wrapped_value = value;
+    if wrapped_value > i8::MAX as isize {
+      wrapped_value = i8::MIN as isize + wrapped_value - i8::MAX as isize;
+    } else if wrapped_value < i8::MIN as isize {
+      wrapped_value = i8::MAX as isize + wrapped_value - i8::MIN as isize;
+    }
+    self.raw[self.ptr] = wrapped_value as i8;
   }
 
 }
@@ -83,4 +74,14 @@ fn add(u: usize, i: isize) -> isize {
     } else {
         u as isize + i as isize
     }
+}
+
+fn add_ptr(ptr: usize, val: isize) -> usize {
+  let mut new_val = add(ptr, val);
+  if new_val > (MEMORY_SIZE - 1) as isize {
+    new_val = new_val - MEMORY_SIZE  as isize;
+  } else if new_val < 0 {
+    new_val = MEMORY_SIZE as isize + new_val;
+  }
+  new_val as usize
 }
