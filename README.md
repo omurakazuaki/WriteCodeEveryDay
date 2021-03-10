@@ -2,8 +2,8 @@
 
 ## Continuous Commit Recording
 
-- 🥇 Highest record: **16** days
-- 😊 Latest record: **16** days ( **14** days to reach 🎉**30** days anniversary )
+- 🥇 Highest record: **17** days
+- 😊 Latest record: **17** days ( **13** days to reach 🎉**30** days anniversary )
 
 ## Commit Calendar
 
@@ -21,7 +21,7 @@ Sun|Mon|Tue|Wed|Thu|Fri|Sat
 Sun|Mon|Tue|Wed|Thu|Fri|Sat
 -|-|-|-|-|-|-
 -|1 🍺<br>[json2html](./node/json2html)|2 🍺<br>[p2hub vsce](./node/path2GithubVsce)|3 🍺<br>[docker-api-hack](./node/docker-api-hack)|4 🍺<br>[graphql getting started](./node/graphql-getting-started)|5 🍺<br>[go getting starged](./go/getting-started)|6 🍺<br>[rust getting started](./rust/getting-started)
-7 🍺<br>[rust introduction](./rust/introduction)|8 🍺<br>[optimized bf](./rust/optimaized-bf)|9 🍺<br>[bf compiler](./node/bf-compiler)|10<br>-|11<br>-|12<br>-|13<br>-
+7 🍺<br>[rust introduction](./rust/introduction)|8 🍺<br>[optimized bf](./rust/optimaized-bf)|9 🍺<br>[bf compiler](./node/bf-compiler)|10 🍺<br>[bf gen](./node/bf-gen)|11<br>-|12<br>-|13<br>-
 14<br>-|15<br>-|16<br>-|17<br>-|18<br>-|19<br>-|20<br>-
 21<br>-|22<br>-|23<br>-|24<br>-|25<br>-|26<br>-|27<br>-
 28<br>-|29<br>-|30<br>-|31<br>-|-|-|-
