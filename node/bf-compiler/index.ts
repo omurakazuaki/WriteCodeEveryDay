@@ -75,7 +75,7 @@ const gen = (code: string): string[] => {
     } else if (match?.name === 'moveValL') {
       steps.push(`${nest()}memory.mvv(-${(match.command.length - 4) / 2});`);
     } else if (match?.name === 'clear') {
-      steps.push(`${nest()}memory.put(0);`);
+      steps.push(`${nest()}memory.clr();`);
     } else if (match?.name === 'moveR') {
       steps.push(`${nest()}memory.mov(${match.command.length});`);
     } else if (match?.name === 'moveL') {

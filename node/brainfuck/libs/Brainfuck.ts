@@ -7,6 +7,7 @@ type Option = {
   memorySize?: number;
   cellBits?: 8 | 16 | 32;
   commands?: {
+    clr: string;
     inc: string;
     dec: string;
     nxt: string;
@@ -53,6 +54,7 @@ export class Brainfuck {
       memorySize: 1024 * 8,
       cellBits: 8,
       commands: {
+        clr: '[-]',
         inc: '+',
         dec: '-',
         nxt: '>',
@@ -71,30 +73,65 @@ export class Brainfuck {
     }[this.opt.cellBits||'8'];
   }
 
+  jumpList(code: string) : number[][] {
+    const jumpList = [];
+    const commands = Object.values(this.opt.commands);
+    let nestCount = 0;
+    let start = 0;
+    for (let i = 0; code[i];) {
+      const currentCode = code.slice(i);
+      const command = commands.find(c => currentCode.startsWith(c));
+      if (command === this.opt.commands.opn) {
+        if (nestCount === 0) {
+          start = i;
+        }
+        nestCount++;
+      } else if (command === this.opt.commands.cls) {
+        if (start !== 0) {
+          nestCount--;
+          if (nestCount < 0) {
+            throw Error(`Syntax error: ${this.opt.commands.opn} expected.(index: ${i})`);
+          }
+          if (nestCount === 0) {
+            jumpList.push([start, i]);
+            i = start;
+            start = 0;
+          }
+        }
+      }
+      i += command?.length || 1;
+    }
+    if (start !== 0) {
+      throw Error(`Syntax error: ${this.opt.commands.cls} expected.(index: ${(start)})`);
+    }
+    return jumpList;
+  }
+
   async execute(code: string): Promise<Int8Array|Int16Array|Int32Array> {
     const memory: Int8Array|Int16Array|Int32Array = new this.memoryConstructor(this.opt.memorySize).fill(0);
-    const jumpPoints: number[] = [], skipPoints: number[] = [];
+    const jumpList = this.jumpList(code);
+    const jumpByOpen = jumpList.reduce((acc, v)=>{
+      acc[v[0]] = v[1];
+      return acc;
+    },{});
+    const jumpByClose = jumpList.reduce((acc, v)=>{
+      acc[v[1]] = v[0];
+      return acc;
+    },{});
     const commands = Object.values(this.opt.commands);
     for (let ptr = 0, i = 0; code[i];) {
       const currentCode = code.slice(i);
       const command = commands.find(c => currentCode.startsWith(c));
       if (command === this.opt.commands.opn) {
-        if (memory[ptr] !== 0) {
-          jumpPoints.push(i);
-        } else {
-          skipPoints.push(i);
+        if (memory[ptr] === 0) {
+          i = jumpByOpen[i];
         }
       } else if (command === this.opt.commands.cls) {
-        if (!jumpPoints.length && !skipPoints.length) {
-          throw Error(`Syntax error: ${this.opt.commands.opn} expected.(index: ${i})`);
-        } else if (!skipPoints.length) {
-          i = jumpPoints.pop();
-          continue;
-        } else {
-          skipPoints.pop();
+        if (memory[ptr] !== 0) {
+          i = jumpByClose[i] - 1;
         }
-      } else if (skipPoints.length) {
-        // do nothing
+      } else if (command === this.opt.commands.clr) {
+        memory[ptr] = 0;
       } else if (command === this.opt.commands.nxt) {
         ptr = ptr < this.opt.memorySize - 1 ? ptr + 1 : 0;
       } else if (command === this.opt.commands.prv) {
@@ -111,9 +148,6 @@ export class Brainfuck {
         // do nothing
       }
       i += command?.length || 1;
-    }
-    if (jumpPoints.length || skipPoints.length) {
-      throw Error(`Syntax error: ${this.opt.commands.cls} expected.(index: ${(jumpPoints.pop() || skipPoints.pop())})`);
     }
     return memory;
   }
