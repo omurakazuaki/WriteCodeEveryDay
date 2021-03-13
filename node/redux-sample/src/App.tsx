@@ -1,22 +1,30 @@
 import React from 'react';
 import './App.css';
-import Paper from '@material-ui/core/Paper';
-import Grid from '@material-ui/core/Grid';
 import TodoList from './features/todo/List';
-import Detail from './features/todo/detail';
+import Detail from './features/todo/Detail';
+import { Grid, Container, AppBar, Toolbar, Typography } from '@material-ui/core';
 
 function App() {
   return (
-    <div>
-      <Grid container>
+    <Container>
+      <Grid container spacing={3}>
+        <Grid item xs={12}>
+          <AppBar position="static">
+            <Toolbar>
+              <Typography variant="h6">
+                TODO List
+              </Typography>
+            </Toolbar>
+          </AppBar>
+        </Grid>
         <Grid item xs={3}>
-          <Paper><TodoList/></Paper>
+          <TodoList/>
         </Grid>
         <Grid item xs={9}>
-          <Paper><Detail/></Paper>
+          <Detail/>
         </Grid>
       </Grid>
-    </div>
+    </Container>
   );
 }
 

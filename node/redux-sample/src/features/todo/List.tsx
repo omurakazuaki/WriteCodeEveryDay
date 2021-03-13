@@ -2,13 +2,8 @@ import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../../app/store';
 import { TodoState, select } from './todoSlice';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemText from '@material-ui/core/ListItemText';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import Icon from '@material-ui/core/Icon';
+import {List, ListItem, ListItemText, ListItemIcon, Icon, Divider } from '@material-ui/core';
 import TodoListItem from './ListItem';
-import Divider from '@material-ui/core/Divider';
 export default function TodoList() {
 
   const state = useSelector<RootState, TodoState>(state => state.todo);
@@ -26,7 +21,7 @@ export default function TodoList() {
       </List>
       <Divider />
       <List>
-        {state.list.map(i => (<TodoListItem todo={i}/>))}
+        {state.list.map(i => (<TodoListItem todo={i} selected={state.selected?.id===i.id}/>))}
       </List>
     </div>
   );

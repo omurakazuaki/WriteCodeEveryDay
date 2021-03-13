@@ -1,7 +1,7 @@
+# Redux sample (TODO List)
 
-
-## create project
+## generate project template
 
 ```
  create-react-app --template redux-typescript redux-sample
- ```
+```
