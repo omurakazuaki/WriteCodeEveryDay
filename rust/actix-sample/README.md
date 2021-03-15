@@ -35,3 +35,13 @@ http://localhost:8080/todos
 
 ### GET Todo
 http://localhost:8080/todo/1
+
+### POST Todo
+```
+curl -X POST http://localhost:8080/todo -d '{
+    "title": "meeting",
+    "description": "description",
+    "status": "Close",
+    "deadline": "2021-03-12"
+}'
+```
