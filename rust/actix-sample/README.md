@@ -31,17 +31,25 @@ echo '
 ## API
 
 ### GET Todos
-http://localhost:8080/todos
+```
+curl http://localhost:8080/todos
+```
 
 ### GET Todo
-http://localhost:8080/todo/1
+```
+curl http://localhost:8080/todos/1
+```
 
 ### POST Todo
 ```
-curl -X POST http://localhost:8080/todo -d '{
+curl -X POST http://localhost:8080/todos -d '{
     "title": "meeting",
     "description": "description",
     "status": "Close",
     "deadline": "2021-03-12"
 }'
+```
+### DELETE Todo
+```
+curl -X DELETE http://localhost:8080/todos/3
 ```

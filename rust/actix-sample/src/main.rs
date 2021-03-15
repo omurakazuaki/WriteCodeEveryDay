@@ -1,4 +1,4 @@
-use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder};
+use actix_web::{get, post, delete, web, App, HttpResponse, HttpServer, Responder};
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::io;
@@ -40,11 +40,11 @@ async fn get_todos() -> impl Responder {
     }
 }
 
-#[get("/todo/{id}")]
+#[get("/todos/{id}")]
 async fn get_todo(web::Path(id): web::Path<u64>) -> impl Responder {
     match fetch_data() {
         Ok(data) => {
-            match data.into_iter().find(|v| match v.id {
+            match data.iter().find(|v| match v.id {
                     None => false,
                     Some(vid) => vid == id
                 }) {
@@ -56,7 +56,7 @@ async fn get_todo(web::Path(id): web::Path<u64>) -> impl Responder {
     }
 }
 
-#[post("/todo")]
+#[post("/todos")]
 async fn post_todo(req_body: String) -> impl Responder {
     match serde_json::from_str::<Todo>(&req_body) {
         Ok(mut todo) => {
@@ -76,7 +76,27 @@ async fn post_todo(req_body: String) -> impl Responder {
                 Err(_) => HttpResponse::InternalServerError().json("error")
             }
         },
-        Err(_) => HttpResponse::InternalServerError().json("parse error")
+        Err(_) => HttpResponse::BadRequest().json("parse error")
+    }
+}
+
+#[delete("/todos/{id}")]
+async fn delete_todo(web::Path(id): web::Path<u64>) -> impl Responder {
+    match fetch_data() {
+        Ok(mut data) => {
+            match data.iter().position(|v| v.id.unwrap() == id) {
+                None => HttpResponse::NotFound().json("not found"),
+                Some(index) => {
+                    data.remove(index);
+                    match save_data(&data) {
+                        Ok(_) => HttpResponse::Ok().finish(),
+                        Err(_) => HttpResponse::InternalServerError().json("error")
+                    }
+                }
+            }
+
+        },
+        Err(_) => HttpResponse::InternalServerError().json("error")
     }
 }
 
@@ -87,6 +107,7 @@ async fn main() -> std::io::Result<()> {
             .service(get_todos)
             .service(get_todo)
             .service(post_todo)
+            .service(delete_todo)
     })
     .bind("127.0.0.1:8080")?
     .run()
