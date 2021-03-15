@@ -5,6 +5,29 @@
 cargo run
 ```
 
+## Setup data
+
+```
+echo '
+[
+  {
+    "id": 1,
+    "title": "Tel",
+    "description": "description",
+    "status": "Open",
+    "deadline": "2021-03-14"
+  },
+  {
+    "id": 2,
+    "title": "Programming",
+    "description": "description",
+    "status": "InProgress",
+    "deadline": "2021-03-15"
+  }
+]
+' > target/data.json
+````
+
 ## API
 
 ### GET Todos
