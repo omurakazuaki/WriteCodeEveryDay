@@ -10,15 +10,13 @@ pub struct GameOfLife {
 #[wasm_bindgen]
 impl GameOfLife {
     pub fn new(width: usize, height: usize) -> GameOfLife {
-
-        let gol = GameOfLife {
+        GameOfLife {
             cells: vec![0; width * height]
             .iter()
             .map(|_| if js_sys::Math::random() < 0.5 { 1 } else { 0 })
             .collect(),
             width: width
-        };
-        gol
+        }
     }
 
     pub fn cells(&self) -> Vec<u8> {
@@ -26,19 +24,19 @@ impl GameOfLife {
     }
 
     pub fn tick(&mut self) {
-        let size = self.width as isize;
+        let width = self.width as isize;
         let mut new_cells: Vec<u8> = vec![0; self.cells.len()];
         let mut i = 0isize;
         while i < new_cells.len() as isize {
             let sum = vec![
-                    i-size-1, i-size, i-size+1,
+                    i-width-1, i-width, i-width+1,
                     i-1, i+1,
-                    i+size-1, i+size, i+size+1
+                    i+width-1, i+width, i+width+1
                 ].into_iter()
                 .filter(|v| {
                     -1 < *v && *v < new_cells.len() as isize &&
-                    !(i % size == 0 && v % size == size - 1) &&
-                    !(i % size == size - 1 && v % size == 0)
+                    !(i % width == 0 && v % width == width - 1) &&
+                    !(i % width == width - 1 && v % width == 0)
                 })
                 .fold(0, |sum, v| sum + self.cells.get(v as usize).unwrap());
             let cur = self.cells.get(i as usize).unwrap();

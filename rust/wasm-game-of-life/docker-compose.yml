@@ -1,0 +1,10 @@
+version: "3.1"
+
+services:
+  gol:
+    image: nginx:latest
+    volumes:
+      - ./nginx/mime.types:/etc/nginx/mime.types
+      - ./dist:/usr/share/nginx/html
+    ports:
+      - 80:80
