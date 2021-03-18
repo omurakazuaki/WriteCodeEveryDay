@@ -1,8 +1,13 @@
+import JsGameOfLife from "./game_of_life";
 import("../pkg/index.js").then(({GameOfLife})=>{
 
+  const params = new URL(window.location.href).searchParams;
+  const isJs = params.get('l') == 'js';
+  document.getElementById('title').innerText = `Game of Life with ${isJs ? 'Javascript': 'Rust'}`;
+
   const CELL_SIZE = 5; // px
-  const WIDTH = 256;
-  const HEIGHT = 128;
+  const WIDTH = Number(params.get('w')) || 400;
+  const HEIGHT = Number(params.get('h')) || 200;
   const GRID_COLOR = "#282c34";
   const DEAD_COLOR = "#000000";
   const ALIVE_COLOR = "#61dafb";
@@ -62,16 +67,16 @@ import("../pkg/index.js").then(({GameOfLife})=>{
     }
   })();
 
-  const renderLoop = (() => {
-    const gol = GameOfLife.new(WIDTH, HEIGHT);
+  const FPS = 60;
+  const renderLoop = ((gol) => {
     return () => {
       gol.tick();
       drawCells(gol.cells());
-      requestAnimationFrame(renderLoop);
+      setTimeout(renderLoop, 1000 / FPS);
     }
-  })();
+  })(isJs ? JsGameOfLife.new(WIDTH, HEIGHT) : GameOfLife.new(WIDTH, HEIGHT));
 
   drawGrid();
-  requestAnimationFrame(renderLoop);
+  renderLoop();
 
 }).catch(console.error);
