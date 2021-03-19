@@ -41,15 +41,16 @@ impl TryFrom<i32> for CCValues {
 }
 
 #[derive(Debug)]
-pub struct Potion {
-    x: usize,
-    y: usize
+pub struct Position {
+    x: isize,
+    y: isize
 }
 
 pub struct Piet {
     stack: Vec<isize>,
     codels: Vec<RGB>,
     width: usize,
+    height: usize,
     dp: DPValues,
     cc: CCValues,
     ptr: usize,
@@ -66,6 +67,11 @@ pub struct RGB {
 static BLACK: RGB = RGB {r:  0, g:  0, b:  0};
 static WHITE: RGB = RGB {r:255, g:255, b:255};
 
+// static COLORS: Vec<RGB> = vec![
+//     RGB{r: 255, g: 192, b: 192}, RGB{r: 255, g: 255, b: 192}, RGB{r: 192, g: 255, b: 192}, RGB{r: 192, g: 255, b: 255}, RGB{r: 192, g: 192, b: 255}, RGB{r: 255, g: 192, b: 255},
+//     RGB{r: 255, g: 000, b: 000}, RGB{r: 255, g: 255, b: 000}, RGB{r: 000, g: 255, b: 000}, RGB{r: 000, g: 255, b: 255}, RGB{r: 000, g: 000, b: 255}, RGB{r: 255, g: 000, b: 255},
+//     RGB{r: 192, g: 000, b: 000}, RGB{r: 192, g: 192, b: 000}, RGB{r: 000, g: 192, b: 000}, RGB{r: 000, g: 192, b: 192}, RGB{r: 000, g: 000, b: 192}, RGB{r: 192, g: 000, b: 192}
+// ];
 
 impl PartialEq for RGB {
     fn eq(&self, other: &Self) -> bool {
@@ -80,6 +86,7 @@ impl Piet {
     pub fn new(frame: &gif::Frame) -> Self {
         Self {
             width: frame.width as usize,
+            height: frame.height as usize,
             stack: vec![],
             codels: frame.buffer.chunks(4).map(|v|RGB{r:v[0], g:v[1], b:v[2]}).collect(),
             ptr: 0,
@@ -94,8 +101,8 @@ impl Piet {
         self.search_color_block(self.ptr as isize, blocks)
     }
 
-    fn get_position(&self, index: usize) -> Potion {
-        Potion{ x: index % self.width, y: index / self.width }
+    fn get_position(&self, index: usize) -> Position {
+        Position{ x: (index % self.width) as isize, y: (index / self.width)  as isize }
     }
 
     fn search_color_block(&self, ptr: isize, blocks: Vec<usize>) -> Vec<usize> {
@@ -109,75 +116,91 @@ impl Piet {
                 } else {
                     let mut b = blocks.clone();
                     b.push(ptr as usize);
-                    let b = self.search_color_block(ptr + 1, b);
-                    let b = self.search_color_block(ptr + self.width as isize, b);
-                    let b = self.search_color_block(ptr - 1, b);
-                    let b = self.search_color_block(ptr - self.width as isize, b);
-                    b
+                    let pos = self.get_position(ptr as usize);
+                    vec![
+                        Position{x: pos.x - 1, y: pos.y},
+                        Position{x: pos.x + 1, y: pos.y},
+                        Position{x: pos.x, y: pos.y - 1},
+                        Position{x: pos.x, y: pos.y + 1},
+                    ]
+                    .iter()
+                    .filter(|p| -1 < p.x && p.x < self.width as isize && -1 < p.y && p.y < self.height as isize)
+                    .fold(b, |b, p| self.search_color_block(p.y * self.width as isize + p.x, b))
                 }
             }
         }
     }
 
     pub fn next(&mut self) {
-        let mut blocks: Vec<Potion> = self.current_color_block()
+        let current_codel = self.codels.get(self.ptr).unwrap();
+        let mut blocks: Vec<Position> = self.current_color_block()
             .into_iter()
-            .map(|i|self.get_position(i))
+            .map(|i| self.get_position(i))
+            .map(|p| match self.dp {
+                DPValues::Right => Position{x: p.x + 1, y: p.y},
+                DPValues::Left  => Position{x: p.x - 1, y: p.y},
+                DPValues::Up    => Position{x: p.x, y: p.y - 1},
+                DPValues::Down  => Position{x: p.x, y: p.y + 1},
+            })
+            .filter(|p| -1 < p.x && p.x < self.width as isize && -1 < p.y && p.y < self.height as isize)
+            .filter(|p| match self.codels.get((p.y * self.width as isize + p.x) as usize) {
+                None => false,
+                Some(codel) => codel != current_codel
+            })
             .collect();
         blocks.sort_by(|a, b| {
-            let cmp_y = match self.cc {
-                CCValues::Left  => a.y.cmp(&b.y),
-                CCValues::Right => b.y.cmp(&a.y),
-            };
             match self.dp {
                 DPValues::Right => match b.x.cmp(&a.x) {
-                    Ordering::Equal => cmp_y,
+                    Ordering::Equal => match self.cc {
+                        CCValues::Left  => a.y.cmp(&b.y),
+                        CCValues::Right => b.y.cmp(&a.y),
+                    },
                     other => other
                 },
-                DPValues::Left  => match a.x.cmp(&b.x) {
-                    Ordering::Equal => cmp_y,
+                DPValues::Left => match a.x.cmp(&b.x) {
+                    Ordering::Equal => match self.cc {
+                        CCValues::Left  => a.y.cmp(&b.y),
+                        CCValues::Right => b.y.cmp(&a.y),
+                    },
                     other => other
                 },
-                DPValues::Up    => match b.x.cmp(&a.x) {
-                    Ordering::Equal => cmp_y,
+                DPValues::Up => match a.y.cmp(&b.y) {
+                    Ordering::Equal => match self.cc {
+                        CCValues::Left  => a.x.cmp(&b.x),
+                        CCValues::Right => b.x.cmp(&a.x),
+                    },
                     other => other
                 },
-                DPValues::Down  => match a.x.cmp(&b.x) {
-                    Ordering::Equal => cmp_y,
+                DPValues::Down => match b.y.cmp(&a.y) {
+                    Ordering::Equal => match self.cc {
+                        CCValues::Left  => a.x.cmp(&b.x),
+                        CCValues::Right => b.x.cmp(&a.x),
+                    },
                     other => other
                 },
             }
         });
-        let new_ptr: isize = (blocks[0].y * self.width + blocks[0].x) as isize + match self.dp {
-            DPValues::Right =>  1,
-            DPValues::Left  => -1,
-            DPValues::Up    => -(self.width as isize),
-            DPValues::Down  => self.width as isize,
-        };
-        match self.codels.get(new_ptr as usize) {
+        match blocks.get(0) {
             None => {
                 match self.retry() {
                     Err(_) => {},
                     Ok(_) => { self.next() }
                 }
             },
-            Some(codel) => {
-                let new_ptr_u = new_ptr as usize;
-                if *codel == WHITE {
-                    self.ptr = new_ptr_u;
-                    self.next();
-                } else if new_ptr < 0 || self.ptr / self.width != new_ptr_u / self.width {
-                    match self.retry() {
-                        Err(_) => {},
-                        Ok(_) => { self.next() }
-                    }
-                } else if *codel == BLACK {
+            Some(p) => {
+                let new_ptr = p.y * self.width as isize + p.x;
+                let codel = self.codels.get(new_ptr as usize).unwrap();
+                if *codel == BLACK {
                     match self.retry() {
                         Err(_) => {},
                         Ok(_) => { self.next() }
                     }
                 } else {
-                    self.ptr = new_ptr_u;
+                    self.retry_count = 0;
+                    self.ptr = new_ptr as usize;
+                    if *codel == WHITE {
+                        self.next();
+                    }
                 }
             }
         }
@@ -188,13 +211,13 @@ impl Piet {
         if self.retry_count > 7 {
             Err(())
         } else if self.retry_count % 2 == 0 {
-            let n = (self.cc as i32 + 1) / 2 % 2;
+            let n = self.retry_count as i32 / 2 % 2;
             self.cc = n.try_into()?;
             println!("dp={:?} cc={:?} n={}", self.dp, self.cc, n);
             Ok(())
         } else {
-            let n = (self.dp as i32 + 1) / 2 % 4;
-            self.cc = n.try_into()?;
+            let n = self.retry_count as i32 / 2 % 4;
+            self.dp = n.try_into()?;
             println!("dp={:?} cc={:?} n={}", self.dp, self.cc, n);
             Ok(())
         }
@@ -210,15 +233,41 @@ fn main() {
 
     let frame = decoder.read_next_frame().unwrap().unwrap();
     let mut piet = Piet::new(frame);
-    println!("{} {:?}", piet.ptr, piet.current_color_block().len());
+    println!("{:?} {:?}", piet.get_position(piet.ptr), piet.current_color_block().len());
     piet.next();
-    println!("{} {:?}", piet.ptr, piet.current_color_block().len());
+    println!("{:?} {:?}", piet.get_position(piet.ptr), piet.current_color_block().len());
     piet.next();
-    println!("{} {:?}", piet.ptr, piet.current_color_block().len());
+    println!("{:?} {:?}", piet.get_position(piet.ptr), piet.current_color_block().len());
     piet.next();
-    println!("{} {:?}", piet.ptr, piet.current_color_block().len());
+    println!("{:?} {:?}", piet.get_position(piet.ptr), piet.current_color_block().len());
     piet.next();
-    println!("{} {:?}", piet.ptr, piet.current_color_block().len());
+    println!("{:?} {:?}", piet.get_position(piet.ptr), piet.current_color_block().len());
     piet.next();
-    println!("{} {:?}", piet.ptr, piet.current_color_block().len());
+    println!("{:?} {:?}", piet.get_position(piet.ptr), piet.current_color_block().len());
+    piet.next();
+    println!("{:?} {:?}", piet.get_position(piet.ptr), piet.current_color_block().len());
+    piet.next();
+    println!("{:?} {:?}", piet.get_position(piet.ptr), piet.current_color_block().len());
+    piet.next();
+    println!("{:?} {:?}", piet.get_position(piet.ptr), piet.current_color_block().len());
+    piet.next();
+    println!("{:?} {:?}", piet.get_position(piet.ptr), piet.current_color_block().len());
+    piet.next();
+    println!("{:?} {:?}", piet.get_position(piet.ptr), piet.current_color_block().len());
+    piet.next();
+    println!("{:?} {:?}", piet.get_position(piet.ptr), piet.current_color_block().len());
+    piet.next();
+    println!("{:?} {:?}", piet.get_position(piet.ptr), piet.current_color_block().len());
+    piet.next();
+    println!("{:?} {:?}", piet.get_position(piet.ptr), piet.current_color_block().len());
+    piet.next();
+    println!("{:?} {:?}", piet.get_position(piet.ptr), piet.current_color_block().len());
+    piet.next();
+    println!("{:?} {:?}", piet.get_position(piet.ptr), piet.current_color_block().len());
+    piet.next();
+    println!("{:?} {:?}", piet.get_position(piet.ptr), piet.current_color_block().len());
+    piet.next();
+    println!("{:?} {:?}", piet.get_position(piet.ptr), piet.current_color_block().len());
+    piet.next();
+    println!("{:?} {:?}", piet.get_position(piet.ptr), piet.current_color_block().len());
 }
