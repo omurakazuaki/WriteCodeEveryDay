@@ -1,3 +1,4 @@
+use std::env;
 use std::cmp::Eq;
 use std::fs::File;
 use std::cmp::Ordering;
@@ -78,7 +79,6 @@ pub struct RGB {
 }
 
 static BLACK: RGB = RGB {r:  0, g:  0, b:  0};
-static WHITE: RGB = RGB {r:255, g:255, b:255};
 
 static COLORS: [&'static RGB; 18] = [
     &RGB{r: 255, g: 192, b: 192}, &RGB{r: 255, g: 255, b: 192}, &RGB{r: 192, g: 255, b: 192}, &RGB{r: 192, g: 255, b: 255}, &RGB{r: 192, g: 192, b: 255}, &RGB{r: 255, g: 192, b: 255},
@@ -207,12 +207,15 @@ impl Piet {
                     }
                 } else {
                     self.retry_count = 0;
-                    if *codel == WHITE {
-                        self.next(Some(new_ptr as usize))
-                    } else {
-                        self.operate(new_ptr as usize);
-                        self.ptr = new_ptr as usize;
-                        true
+                    match COLORS.iter().position(|c|*c==codel) {
+                        None => {
+                            self.next(Some(new_ptr as usize))
+                        },
+                        Some(_) => {
+                            self.operate(new_ptr as usize);
+                            self.ptr = new_ptr as usize;
+                            true
+                        }
                     }
                 }
             }
@@ -224,16 +227,24 @@ impl Piet {
         if self.retry_count > 7 {
             Err(())
         } else if self.retry_count % 2 == 1 {
-            let n = (self.cc as i32 + 1) % 2;
-            self.cc = n.try_into()?;
-            //println!("dp={:?} cc={:?} n={}", self.dp, self.cc, n);
+            self.switch_cc(1);
             Ok(())
         } else {
-            let n = (self.dp as i32 + 1) % 4;
-            self.dp = n.try_into()?;
-            //println!("dp={:?} cc={:?} n={}", self.dp, self.cc, n);
+            self.rotate_dp(1);
             Ok(())
         }
+    }
+    fn switch_cc(&mut self, times: i32) {
+        let n = (self.cc as i32 + times) % 2;
+        self.cc = n.try_into().unwrap();
+    }
+
+    fn rotate_dp(&mut self, times: i32) {
+        let mut n = (self.dp as i32 + times) % 4;
+        if n < 0 {
+            n += 4;
+        }
+        self.dp = n.try_into().unwrap();
     }
 
     fn operate(&mut self, new_ptr: usize) {
@@ -253,18 +264,18 @@ impl Piet {
              1 => self.push(),
              2 => self.pop(),
              3 => self.add(),
-             4 => println!("subtract"),
-             5 => println!("multiply"),
-             6 => println!("divide"),
+             4 => self.subtract(),
+             5 => self.multiply(),
+             6 => self.divide(),
              7 => self.modulo(),
-             8 => println!("not"),
-             9 => println!("greater"),
-            10 => println!("pointer"),
-            11 => println!("switch"),
+             8 => self.not(),
+             9 => self.greater(),
+            10 => self.pointer(),
+            11 => self.switch(),
             12 => self.duplicate(),
-            13 => println!("roll"),
-            14 => println!("in(number)"),
-            15 => println!("in(char)"),
+            13 => self.roll(),
+            14 => self.in_num(),
+            15 => self.in_char(),
             16 => self.out_num(),
             17 => self.out_char(),
             _ => {}
@@ -281,16 +292,83 @@ impl Piet {
     }
 
     fn add(&mut self) {
-        let a = self.stack.pop().unwrap_or(0);
-        let b = self.stack.pop().unwrap_or(0);
+        if self.stack.len() < 2 {
+            return;
+        }
+        let a = self.stack.pop().unwrap();
+        let b = self.stack.pop().unwrap();
         self.stack.push(a + b);
     }
 
-    fn modulo(&mut self) {
-        let a = self.stack.pop().unwrap_or(0);
-        let b = self.stack.pop().unwrap_or(0);
+    fn subtract(&mut self) {
+        if self.stack.len() < 2 {
+            return;
+        }
+        let a = self.stack.pop().unwrap();
+        let b = self.stack.pop().unwrap();
+        self.stack.push(b - a);
+    }
+
+    fn multiply(&mut self) {
+        if self.stack.len() < 2 {
+            return;
+        }
+        let a = self.stack.pop().unwrap();
+        let b = self.stack.pop().unwrap();
+        self.stack.push(a * b);
+    }
+
+    fn divide(&mut self) {
+        if self.stack.len() < 2 {
+            return;
+        }
+        let a = self.stack.pop().unwrap();
+        let b = self.stack.pop().unwrap();
         if b != 0 {
-            self.stack.push(a % b);
+            self.stack.push(b / a);
+        }
+    }
+
+    fn modulo(&mut self) {
+        if self.stack.len() < 2 {
+            return;
+        }
+        let a = self.stack.pop().unwrap();
+        let b = self.stack.pop().unwrap();
+        if b != 0 {
+            self.stack.push(b % a);
+        }
+    }
+
+    fn not(&mut self) {
+        if self.stack.len() < 1 {
+            return;
+        }
+       let v = self.stack.pop().unwrap();
+       self.stack.push(if v != 0 { 0 } else { 1 });
+    }
+
+    fn greater(&mut self) {
+        if self.stack.len() < 2 {
+            return;
+        }
+        let a = self.stack.pop().unwrap();
+        let b = self.stack.pop().unwrap();
+        self.stack.push(if b > a { 1 } else { 0 });
+    }
+
+    fn pointer(&mut self) {
+        if self.stack.len() < 1 {
+            return;
+        }
+        let v = self.stack.pop().unwrap();
+        self.rotate_dp(v as i32);
+    }
+
+    fn switch(&mut self) {
+        match self.stack.pop() {
+            None => {},
+            Some(v) => { self.switch_cc(v as i32) }
         }
     }
 
@@ -302,24 +380,57 @@ impl Piet {
     }
 
     fn roll(&mut self) {
-        let num = self.stack.pop().unwrap_or(0);
-        let depth = self.stack.pop().unwrap_or(0);
+        if self.stack.len() < 2 {
+            return;
+        }
+        let mut times = self.stack.pop().unwrap();
+        let depth = self.stack.pop().unwrap();
+        if depth < 0 {
+            self.stack.push(depth);
+            self.stack.push(times);
+            return;
+        }
+        let i = self.stack.len() - depth as usize;
+        while times != 0 {
+            if times > 0 {
+                let e = self.stack.pop().unwrap_or(0);
+                self.stack.insert(i, e);
+                times -= 1;
+            } else {
+                let e = self.stack.remove(i);
+                self.stack.push(e);
+                times += 1;
+            }
+        }
 
+    }
+
+    fn in_char(&mut self) {
+        self.stack.push(0); // todo
+    }
+
+    fn in_num(&mut self) {
+        self.stack.push(0); // todo
     }
 
     fn out_char(&mut self) {
-        let v = self.stack.pop().unwrap();
-        print!("{}", std::char::from_u32(v as u32).unwrap());
+        match self.stack.pop() {
+            None => {},
+            Some(v) => {print!("{}", std::char::from_u32(v as u32).unwrap())}
+        }
     }
 
     fn out_num(&mut self) {
-        let v = self.stack.pop().unwrap();
-        print!("{}",v as u32);
+        match self.stack.pop() {
+            None => {},
+            Some(v) => {print!("{}", v as u32)}
+        }
     }
 }
 
 fn main() {
-    let file = File::open("./samples/Piet_hello.gif").unwrap();
+    let source_path = env::args().nth(1).unwrap();
+    let file = File::open(source_path).unwrap();
     let mut decoder = gif::DecodeOptions::new();
     decoder.set_color_output(gif::ColorOutput::RGBA);
     let mut decoder = decoder.read_info(file).unwrap();
@@ -327,6 +438,6 @@ fn main() {
     let frame = decoder.read_next_frame().unwrap().unwrap();
     let mut piet = Piet::new(frame);
     while piet.next(None) {
-        //println!("-----------ptr={:?} area={:?} dp={:?} cc={:?}", Position::from_ptr(piet.ptr, piet.width), piet.color_block(None).len(), piet.dp, piet.cc);
+        //println!("-----------ptr={:?} stack={:?} dp={:?} cc={:?}", Position::from_ptr(piet.ptr, piet.width), piet.stack, piet.dp, piet.cc);
     };
 }
