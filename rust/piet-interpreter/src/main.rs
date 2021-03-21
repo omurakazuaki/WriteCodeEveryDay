@@ -211,7 +211,7 @@ impl Piet {
                     self.retry_count = 0;
                     match COLORS.iter().position(|c|*c==codel) {
                         None => {
-                            self.slide(new_ptr as usize)
+                            self.slide(new_ptr as usize, new_ptr as usize)
                         },
                         Some(_) => {
                             self.operate(new_ptr as usize);
@@ -223,7 +223,7 @@ impl Piet {
         }
     }
 
-    fn slide(&mut self, ptr: usize) -> bool {
+    fn slide(&mut self, ptr: usize, root: usize) -> bool {
         let pos = Position::from_ptr(ptr as usize, self.width);
         let next_pos = match self.dp {
             DPValues::Right => Position::new(pos.x + 1, pos.y, self.width),
@@ -235,12 +235,15 @@ impl Piet {
            -1 < next_pos.y && next_pos.y < self.height as isize {
             let new_ptr = next_pos.to_ptr();
             let codel = self.codels.get(new_ptr as usize).unwrap();
-            if *codel == BLACK {
-                false
+            if *codel == BLACK || self.ptr == new_ptr as usize {
+                match self.retry() {
+                    Err(_) => {false},
+                    Ok(_) => { self.slide(root, root) }
+                }
             } else {
                 match COLORS.iter().position(|c|*c==codel) {
                     None => {
-                        self.slide(new_ptr as usize)
+                        self.slide(new_ptr as usize, root)
                     },
                     Some(_) => {
                         self.ptr = new_ptr as usize;
@@ -249,7 +252,10 @@ impl Piet {
                 }
             }
         } else {
-            false
+            match self.retry() {
+                Err(_) => {false},
+                Ok(_) => { self.slide(root, root) }
+            }
         }
     }
 
@@ -291,24 +297,24 @@ impl Piet {
         if lightness_delta < 0 {
             lightness_delta += 3;
         }
-        match hue_delta * 3 + lightness_delta {
-             1 => self.push(),
-             2 => self.pop(),
-             3 => self.add(),
-             4 => self.subtract(),
-             5 => self.multiply(),
-             6 => self.divide(),
-             7 => self.modulo(),
-             8 => self.not(),
-             9 => self.greater(),
-            10 => self.pointer(),
-            11 => self.switch(),
-            12 => self.duplicate(),
-            13 => self.roll(),
-            14 => self.in_num(),
-            15 => self.in_char(),
-            16 => self.out_num(),
-            17 => self.out_char(),
+        match (hue_delta, lightness_delta) {
+            (0, 1) => self.push(),
+            (0, 2) => self.pop(),
+            (1, 0) => self.add(),
+            (1, 1) => self.subtract(),
+            (1, 2) => self.multiply(),
+            (2, 0) => self.divide(),
+            (2, 1) => self.modulo(),
+            (2, 2) => self.not(),
+            (3, 0) => self.greater(),
+            (3, 1) => self.pointer(),
+            (3, 2) => self.switch(),
+            (4, 0) => self.duplicate(),
+            (4, 1) => self.roll(),
+            (4, 2) => self.in_num(),
+            (5, 0) => self.in_char(),
+            (5, 1) => self.out_num(),
+            (5, 2) => self.out_char(),
             _ => {}
         }
         self.ptr = new_ptr as usize;
@@ -422,14 +428,19 @@ impl Piet {
             self.stack.push(times);
             return;
         }
-        let i = self.stack.len() - depth as usize;
+        let i = self.stack.len() as isize - depth;
+        if i < 0 {
+            self.stack.push(depth);
+            self.stack.push(times);
+            return;
+        }
         while times != 0 {
             if times > 0 {
-                let e = self.stack.pop().unwrap_or(0);
-                self.stack.insert(i, e);
+                let e = self.stack.pop().unwrap();
+                self.stack.insert(i as usize, e);
                 times -= 1;
             } else {
-                let e = self.stack.remove(i);
+                let e = self.stack.remove(i as usize);
                 self.stack.push(e);
                 times += 1;
             }
