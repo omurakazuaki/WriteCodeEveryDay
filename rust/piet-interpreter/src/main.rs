@@ -105,7 +105,7 @@ impl Piet {
             ptr: 0,
             dp: DPValues::Right,
             cc: CCValues::Left,
-            retry_count: 0
+            retry_count: 0,
         }
     }
 
@@ -131,7 +131,8 @@ impl Piet {
                         Position::new(pos.x, pos.y + 1, self.width),
                     ]
                     .iter()
-                    .filter(|p| -1 < p.x && p.x < self.width as isize && -1 < p.y && p.y < self.height as isize)
+                    .filter(|p| -1 < p.x && p.x < self.width as isize &&
+                                -1 < p.y && p.y < self.height as isize)
                     .map(|p|p.to_ptr())
                     .filter(|p| *rgb == *self.codels.get(*p as usize).unwrap())
                     .fold(b, |b, p| self.search_color_block(p, b))
@@ -152,7 +153,8 @@ impl Piet {
                 DPValues::Up    => Position::new(pos.x, pos.y - 1, self.width),
                 DPValues::Down  => Position::new(pos.x, pos.y + 1, self.width),
             })
-            .filter(|p| -1 < p.x && p.x < self.width as isize && -1 < p.y && p.y < self.height as isize)
+            .filter(|p| -1 < p.x && p.x < self.width as isize &&
+                        -1 < p.y && p.y < self.height as isize)
             .filter(|p| match self.codels.get((p.to_ptr()) as usize) {
                 None => false,
                 Some(codel) => codel != current_codel
@@ -209,16 +211,45 @@ impl Piet {
                     self.retry_count = 0;
                     match COLORS.iter().position(|c|*c==codel) {
                         None => {
-                            self.next(Some(new_ptr as usize))
+                            self.slide(new_ptr as usize)
                         },
                         Some(_) => {
                             self.operate(new_ptr as usize);
-                            self.ptr = new_ptr as usize;
                             true
                         }
                     }
                 }
             }
+        }
+    }
+
+    fn slide(&mut self, ptr: usize) -> bool {
+        let pos = Position::from_ptr(ptr as usize, self.width);
+        let next_pos = match self.dp {
+            DPValues::Right => Position::new(pos.x + 1, pos.y, self.width),
+            DPValues::Left  => Position::new(pos.x - 1, pos.y, self.width),
+            DPValues::Up    => Position::new(pos.x, pos.y - 1, self.width),
+            DPValues::Down  => Position::new(pos.x, pos.y + 1, self.width),
+        };
+        if -1 < next_pos.x && next_pos.x < self.width as isize &&
+           -1 < next_pos.y && next_pos.y < self.height as isize {
+            let new_ptr = next_pos.to_ptr();
+            let codel = self.codels.get(new_ptr as usize).unwrap();
+            if *codel == BLACK {
+                false
+            } else {
+                match COLORS.iter().position(|c|*c==codel) {
+                    None => {
+                        self.slide(new_ptr as usize)
+                    },
+                    Some(_) => {
+                        self.ptr = new_ptr as usize;
+                        true
+                    }
+                }
+            }
+        } else {
+            false
         }
     }
 
@@ -280,6 +311,7 @@ impl Piet {
             17 => self.out_char(),
             _ => {}
         }
+        self.ptr = new_ptr as usize;
         //println!("{}, {}", hue_delta, lightness_delta);
     }
 
