@@ -3,7 +3,7 @@
 CURRENT=$(cd $(dirname $0);pwd)
 README="$CURRENT/../README.md"
 
-GIT_LOG=$(cd $CURRENT/.. && node node/gitlog/index.js './*/*/README.md')
+GIT_LOG=$(cd $CURRENT/.. && node node/gitlog/index.js './*/*/{README,CHANGELOG*}.md')
 
 echo "# Write Code Every Day
 
