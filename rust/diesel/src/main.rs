@@ -8,14 +8,19 @@ pub mod schema;
 use self::models::NewPost;
 use diesel::prelude::*;
 use diesel::sqlite::SqliteConnection;
+use diesel::r2d2::{ConnectionManager, Pool };
 use dotenv::dotenv;
+
+pub fn establish_connection() -> Pool<ConnectionManager<SqliteConnection>> {
+    let database_url = "sample.db";
+    let manager = ConnectionManager::<SqliteConnection>::new(database_url);
+    Pool::builder().max_size(4).build(manager).expect("Failed to create pool")
+}
 
 fn main() {
     dotenv().ok();
 
-    let database_url = "sample.db";
-    let conn = SqliteConnection::establish(&database_url)
-        .expect(&format!("Error connecting to {}", database_url));
+    let conn = establish_connection().get().unwrap();
 
     let new_post = NewPost { body: "title", title: "sample" };
 
