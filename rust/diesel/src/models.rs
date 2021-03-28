@@ -1,6 +1,7 @@
 use super::schema::posts;
+use serde::{Deserialize, Serialize};
 
-#[derive(Queryable, Debug)]
+#[derive(Queryable, Debug, Deserialize, Serialize)]
 pub struct Post {
     pub id: i32,
     pub title: String,
@@ -8,7 +9,7 @@ pub struct Post {
     pub published: bool,
 }
 
-#[derive(Insertable)]
+#[derive(Insertable, Deserialize, Serialize)]
 #[table_name = "posts"]
 pub struct NewPost<'a> {
     pub title: &'a str,
