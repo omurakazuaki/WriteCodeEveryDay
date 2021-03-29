@@ -15,15 +15,11 @@ use actix_web::{get, post, delete, web, App, HttpResponse, HttpServer, Responder
 async fn get_posts() -> impl Responder {
     match establish_connection().get() {
         Err(_) => HttpResponse::InternalServerError().json("error"),
-        Ok(conn) => {
-            match schema::posts::dsl::posts.load::<models::Post>(&conn) {
+        Ok(conn) => match schema::posts::dsl::posts.load::<models::Post>(&conn) {
+            Err(_) => HttpResponse::InternalServerError().json("error"),
+            Ok(posts) => match serde_json::to_string(&posts) {
                 Err(_) => HttpResponse::InternalServerError().json("error"),
-                Ok(posts) => {
-                    match serde_json::to_string(&posts) {
-                        Err(_) => HttpResponse::InternalServerError().json("error"),
-                        Ok(posts_as_json) => HttpResponse::Ok().json(&posts_as_json)
-                    }
-                }
+                Ok(posts_as_json) => HttpResponse::Ok().json(&posts_as_json)
             }
         }
     }
@@ -33,15 +29,11 @@ async fn get_posts() -> impl Responder {
 async fn get_post(web::Path(id): web::Path<i32>) -> impl Responder {
     match establish_connection().get() {
         Err(_) => HttpResponse::InternalServerError().json("error"),
-        Ok(conn) => {
-            match schema::posts::dsl::posts.find(id).first::<models::Post>(&conn) {
+        Ok(conn) => match schema::posts::dsl::posts.find(id).first::<models::Post>(&conn) {
+            Err(_) => HttpResponse::InternalServerError().json("error"),
+            Ok(post) => match serde_json::to_string(&post) {
                 Err(_) => HttpResponse::InternalServerError().json("error"),
-                Ok(post) => {
-                    match serde_json::to_string(&post) {
-                        Err(_) => HttpResponse::InternalServerError().json("error"),
-                        Ok(post_as_json) => HttpResponse::Ok().json(&post_as_json)
-                    }
-                }
+                Ok(post_as_json) => HttpResponse::Ok().json(&post_as_json)
             }
         }
     }
@@ -51,16 +43,23 @@ async fn get_post(web::Path(id): web::Path<i32>) -> impl Responder {
 async fn post_posts(req_body: String) -> impl Responder {
     match serde_json::from_str::<models::NewPost>(&req_body) {
         Err(_) => HttpResponse::BadRequest().json("parse error"),
-        Ok(new_post) => {
-            match establish_connection().get() {
+        Ok(new_post) => match establish_connection().get() {
+            Err(_) => HttpResponse::InternalServerError().json("error"),
+            Ok(conn) => match diesel::insert_into(schema::posts::table).values(&new_post).execute(&conn) {
                 Err(_) => HttpResponse::InternalServerError().json("error"),
-                Ok(conn) => {
-                    match diesel::insert_into(schema::posts::table).values(&new_post).execute(&conn) {
-                        Err(_) => HttpResponse::InternalServerError().json("error"),
-                        Ok(id) => HttpResponse::Ok().json(id)
-                    }
-                }
+                Ok(count) => HttpResponse::Ok().json(count)
             }
+        }
+    }
+}
+
+#[delete("/posts/{id}")]
+async fn delete_post(web::Path(id): web::Path<i32>) -> impl Responder {
+    match establish_connection().get() {
+        Err(_) => HttpResponse::InternalServerError().json("error"),
+        Ok(conn) => match diesel::delete(schema::posts::dsl::posts.find(id)).execute(&conn) {
+            Err(_) => HttpResponse::InternalServerError().json("error"),
+            Ok(count) => HttpResponse::Ok().json(&count)
         }
     }
 }
@@ -72,6 +71,7 @@ async fn main() -> std::io::Result<()> {
             .service(get_posts)
             .service(get_post)
             .service(post_posts)
+            .service(delete_post)
     })
     .bind("127.0.0.1:8080")?
     .run()
