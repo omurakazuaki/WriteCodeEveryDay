@@ -11,6 +11,48 @@ use self::db::establish_connection;
 
 use actix_web::{get, post, delete, web, App, HttpResponse, HttpServer, Responder};
 
+#[get("/users")]
+async fn get_users() -> impl Responder {
+    match establish_connection().get() {
+        Err(_) => HttpResponse::InternalServerError().json("error"),
+        Ok(conn) => match schema::users::dsl::users.load::<models::User>(&conn) {
+            Err(_) => HttpResponse::InternalServerError().json("error"),
+            Ok(users) => match serde_json::to_string(&users) {
+                Err(_) => HttpResponse::InternalServerError().json("error"),
+                Ok(posts_as_json) => HttpResponse::Ok().json(&posts_as_json)
+            }
+        }
+    }
+}
+
+#[get("/users/{id}")]
+async fn get_user(web::Path(id): web::Path<i32>) -> impl Responder {
+    match establish_connection().get() {
+        Err(_) => HttpResponse::InternalServerError().json("error"),
+        Ok(conn) => match schema::users::dsl::users.find(id).first::<models::User>(&conn) {
+            Err(_) => HttpResponse::InternalServerError().json("error"),
+            Ok(user) => match serde_json::to_string(&user) {
+                Err(_) => HttpResponse::InternalServerError().json("error"),
+                Ok(user_as_json) => HttpResponse::Ok().json(&user_as_json)
+            }
+        }
+    }
+}
+
+#[post("/users")]
+async fn post_users(req_body: String) -> impl Responder {
+    match serde_json::from_str::<models::NewUser>(&req_body) {
+        Err(_) => HttpResponse::BadRequest().json("parse error"),
+        Ok(new_user) => match establish_connection().get() {
+            Err(_) => HttpResponse::InternalServerError().json("error"),
+            Ok(conn) => match diesel::insert_into(schema::users::table).values(&new_user).execute(&conn) {
+                Err(_) => HttpResponse::InternalServerError().json("error"),
+                Ok(count) => HttpResponse::Ok().json(count)
+            }
+        }
+    }
+}
+
 #[get("/posts")]
 async fn get_posts() -> impl Responder {
     match establish_connection().get() {
@@ -72,6 +114,9 @@ async fn main() -> std::io::Result<()> {
             .service(get_post)
             .service(post_posts)
             .service(delete_post)
+            .service(get_user)
+            .service(get_users)
+            .service(post_users)
     })
     .bind("127.0.0.1:8080")?
     .run()
