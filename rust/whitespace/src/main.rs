@@ -22,15 +22,16 @@ fn run(source: &str) {
             Command{name: "Swap", token: "\n\t", is_param: false},
             Command{name: "Discard", token: "\n\n", is_param: false},
         ]},
+        Imp{name: "Arithmetic", token: "\t ", commands: vec![
+            Command{name: "Addition", token: "  ", is_param: false},
+            Command{name: "Subtraction", token: " \t", is_param: false},
+            Command{name: "Multiplication", token: " \n", is_param: false},
+            Command{name: "Integer Division", token: "\t ", is_param: false},
+            Command{name: "Modulo", token: "\t\t", is_param: false},
+        ]},
         Imp{name: "Heap Access", token: "\t\t", commands: vec![
             Command{name: "Store", token: " ", is_param: false},
             Command{name: "Retrieve", token: "\t", is_param: false},
-        ]},
-        Imp{name: "I/O", token: "\t\n", commands: vec![
-            Command{name: "Output char", token: "  ", is_param: false},
-            Command{name: "Output number", token: " \t", is_param: false},
-            Command{name: "Read char", token: "\t ", is_param: false},
-            Command{name: "Read number", token: "\t\t", is_param: false},
         ]},
         Imp{name: "Flow Control", token: "\n", commands: vec![
             Command{name: "Mark", token: "  ", is_param: true},
@@ -41,12 +42,11 @@ fn run(source: &str) {
             Command{name: "End subroutine", token: "\t\n", is_param: false},
             Command{name: "End", token: "\n\n", is_param: false},
         ]},
-        Imp{name: "Arithmetic", token: "\t", commands: vec![
-            Command{name: "Addition", token: "  ", is_param: false},
-            Command{name: "Subtraction", token: " \t", is_param: false},
-            Command{name: "Multiplication", token: " \n", is_param: false},
-            Command{name: "Integer Division", token: "\t ", is_param: false},
-            Command{name: "Modulo", token: "\t\t", is_param: false},
+        Imp{name: "I/O", token: "\t\n", commands: vec![
+            Command{name: "Output char", token: "  ", is_param: false},
+            Command{name: "Output number", token: " \t", is_param: false},
+            Command{name: "Read char", token: "\t ", is_param: false},
+            Command{name: "Read number", token: "\t\t", is_param: false},
         ]},
     ];
     let code: String = source.chars().filter(|c| *c == ' ' || *c == '\t' || *c == '\n').collect();
