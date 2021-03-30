@@ -2,8 +2,8 @@
 
 ## Continuous Commit Recording
 
-- 🥇 Highest record: **36** days
-- 😊 Latest record: **36** days ( **64** days to reach 🎉**100** days anniversary )
+- 🥇 Highest record: **37** days
+- 😊 Latest record: **37** days ( **63** days to reach 🎉**100** days anniversary )
 
 ## Commit Calendar
 
@@ -24,4 +24,4 @@ Sun|Mon|Tue|Wed|Thu|Fri|Sat
 7 🍺<br>[rust introduction](./rust/introduction)|8 🍺<br>[optimized bf](./rust/optimaized-bf)|9 🍺<br>[bf compiler](./node/bf-compiler)|10 🍺<br>[bf gen](./node/bf-gen)|11 🍺<br>[bf interpreter](./node/brainfuck-interpreter)|12 🍺<br>[bf2js](./node/bf2js)|13 🍺<br>[redux-sample](./node/redux-sample)
 14 🍺<br>[actix sample](./rust/actix-sample)|15 🍺<br>[life game](./rust/lifegame)|16 🍺<br>[wasm with rust](./rust/wasm)|17 🍺<br>[wasm-game-of-life](./rust/wasm-game-of-life)|18 🍺<br>[yew-app](./rust/yew-app)|19 🍺<br>[piet: wip](./rust/piet-interpreter)|20 🍺<br>[piet](./rust/piet)
 21 🍺<br>[piet refactor: wip](./rust/piet-refactor)|22 🍺<br>[bf-interoreter:update](./node/brainfuck-interpreter)|23 🍺<br>[bfi: update](./node/brainfuck-interpreter)|24 🍺<br>[p2gvsce: update](./node/path2GithubVsce)|25 🍺<br>[cellular automaton](./rust/cellular-automaton)|26 🍺<br>[diesel-rs](./rust/diesel)|27 🍺<br>[diesel: r2d2](./rust/diesel)
-28 🍺<br>[diesel x actix](./rust/diesel)|29 🍺<br>[diesel: relation](./rust/diesel)|30<br>-|31<br>-|-|-|-
+28 🍺<br>[diesel x actix](./rust/diesel)|29 🍺<br>[diesel: relation](./rust/diesel)|30 🍺<br>[whitespace: wip](./rust/whitespace)|31<br>-|-|-|-
