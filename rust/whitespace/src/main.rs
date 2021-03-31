@@ -1,20 +1,30 @@
 use std::env;
 use std::fs;
 use std::io::{self};
+use std::collections::HashMap;
 
+#[derive(Debug)]
 struct Command<'a> {
     name: &'a str,
     token: &'a str,
     is_param: bool
 }
 
+#[derive(Debug)]
 struct Imp<'a> {
     name: &'a str,
     token: &'a str,
     commands: Vec<Command<'a>>,
 }
 
-fn run(source: &str) {
+#[derive(Debug)]
+struct Operation<'a> {
+    name: &'a str,
+    param: Option<&'a str>
+}
+
+
+fn tokenized(code: &str) -> Result<Vec<Operation>, ()> {
     let imps: Vec<Imp> = vec![
         Imp{name: "Stack Manipulation", token: " ", commands: vec![
             Command{name: "Push", token: " ", is_param: true},
@@ -26,7 +36,7 @@ fn run(source: &str) {
             Command{name: "Addition", token: "  ", is_param: false},
             Command{name: "Subtraction", token: " \t", is_param: false},
             Command{name: "Multiplication", token: " \n", is_param: false},
-            Command{name: "Integer Division", token: "\t ", is_param: false},
+            Command{name: "Division", token: "\t ", is_param: false},
             Command{name: "Modulo", token: "\t\t", is_param: false},
         ]},
         Imp{name: "Heap Access", token: "\t\t", commands: vec![
@@ -37,48 +47,160 @@ fn run(source: &str) {
             Command{name: "Mark", token: "  ", is_param: true},
             Command{name: "Call", token: " \t", is_param: true},
             Command{name: "Jump", token: " \n", is_param: true},
-            Command{name: "Jump when zero", token: "\t ", is_param: true},
-            Command{name: "Jump when negative", token: "\t\t", is_param: true},
-            Command{name: "End subroutine", token: "\t\n", is_param: false},
+            Command{name: "JumpZero", token: "\t ", is_param: true},
+            Command{name: "JumpNegative", token: "\t\t", is_param: true},
+            Command{name: "Return", token: "\t\n", is_param: false},
             Command{name: "End", token: "\n\n", is_param: false},
         ]},
         Imp{name: "I/O", token: "\t\n", commands: vec![
-            Command{name: "Output char", token: "  ", is_param: false},
-            Command{name: "Output number", token: " \t", is_param: false},
-            Command{name: "Read char", token: "\t ", is_param: false},
-            Command{name: "Read number", token: "\t\t", is_param: false},
+            Command{name: "OutputChar", token: "  ", is_param: false},
+            Command{name: "OutputNumber", token: " \t", is_param: false},
+            Command{name: "ReadChar", token: "\t ", is_param: false},
+            Command{name: "ReadNumber", token: "\t\t", is_param: false},
         ]},
     ];
-    let code: String = source.chars().filter(|c| *c == ' ' || *c == '\t' || *c == '\n').collect();
-    let mut stack: Vec<i8> = vec![];
     let mut ptr: usize = 0;
-    let mut param: Option<&str> = None;
+    let mut operations: Vec<Operation> = vec![];
     loop {
-        // find IMP
+        if code.len() == ptr {
+            break;
+        }
         match imps.iter().find(|imp| code[ptr..].find(imp.token) == Some(0)) {
-            None => break,
+            None => {},
             Some(imp) => {
                 ptr += imp.token.len();
                 match imp.commands.iter().find(|cmd| code[ptr..].find(cmd.token) == Some(0)) {
-                    None => break,
+                    None => {},
                     Some(cmd) => {
                         ptr += cmd.token.len();
-                        if cmd.is_param {
-                            match code[ptr..].find("\n") {
-                                None => break,
+                        let param = match cmd.is_param {
+                            true => match code[ptr..].find("\n") {
+                                None => None,
                                 Some(n) => {
-                                    param = Some(&code[ptr..ptr + n]);
-                                    ptr += n + 1
+                                    ptr += n + 1;
+                                    Some(&code[ptr - n - 1..ptr - 1])
                                 }
-                            }
-                        } else {
-                            param = None;
-                        }
-                        println!("{} {} {} {}", imp.name, cmd.name, str::replace(&str::replace(param.unwrap_or("None"), "\t", "[Tab]"), " ", "[Space]"), ptr);
+                            },
+                            false => None
+                        };
+                        operations.push(Operation{name: cmd.name, param: param});
                     }
                 }
             }
+        };
+    }
+    Ok(operations)
+}
+
+fn run(source: &str) {
+
+    let code: String = source.chars().filter(|c| *c == ' ' || *c == '\t' || *c == '\n').collect();
+    let operations: Vec<Operation> = tokenized(&code).unwrap();
+
+    let mut stack: Vec<isize> = vec![];
+    let mut call_stack: Vec<usize> = vec![];
+    let marks: HashMap<&str, usize> = operations.iter()
+        .enumerate()
+        .filter(|(_, op)| op.name == "Mark")
+        .fold(HashMap::new(), |mut acc, (i, op)| {
+            acc.insert(op.param.unwrap(), i);
+            acc
+        });
+    let mut ptr: usize = 0;
+    loop {
+        match operations.get(ptr) {
+            None => break,
+            Some(op) => {
+                match op.name {
+                    "Push" => {
+                        let int_val = op.param.unwrap().chars().fold(0, |acc, c| {
+                            (acc << 1) + if c == ' ' { 0 } else { 1 }
+                        });
+                        stack.push(int_val);
+                    },
+                    "Duplicate" => {
+                        stack.push(stack.get(stack.len() - 1).unwrap().clone());
+                    },
+                    "Swap" => {
+                        let a = stack.pop().unwrap();
+                        let b = stack.pop().unwrap();
+                        stack.push(a);
+                        stack.push(b);
+                    },
+                    "Discard" => {
+                        stack.pop();
+                    },
+                    "Addition" => {
+                        let a = stack.pop().unwrap();
+                        let b = stack.pop().unwrap();
+                        stack.push(b + a);
+                    },
+                    "Subtraction" => {
+                        let a = stack.pop().unwrap();
+                        let b = stack.pop().unwrap();
+                        stack.push(b - a);
+                    },
+                    "Multiplication" => {
+                        let a = stack.pop().unwrap();
+                        let b = stack.pop().unwrap();
+                        stack.push(b * a);
+                    },
+                    "Division" => {
+                        let a = stack.pop().unwrap();
+                        let b = stack.pop().unwrap();
+                        stack.push(b / a);
+                    },
+                    "Modulo" => {
+                        let a = stack.pop().unwrap();
+                        let b = stack.pop().unwrap();
+                        stack.push(b % a);
+                    },
+                    "Store" => {
+                        //TODO
+                    }
+                    "Retrieve" => {
+                        //TODO
+                    }
+                    "Call" => {
+                        call_stack.push(ptr.clone());
+                        ptr = marks.get(op.param.unwrap()).unwrap().clone();
+                    },
+                    "Jump" => {
+                        ptr = marks.get(op.param.unwrap()).unwrap().clone();
+                    },
+                    "JumpZero" => {
+                        if stack.pop().unwrap() == 0 {
+                            ptr = marks.get(op.param.unwrap()).unwrap().clone();
+                        }
+                    },
+                    "JumpNegative" => {
+                        if stack.pop().unwrap() < 0 {
+                            ptr = marks.get(op.param.unwrap()).unwrap().clone();
+                        }
+                    },
+                    "Return" => {
+                        ptr = call_stack.pop().unwrap();
+                    },
+                    "End" => {
+                        break;
+                    },
+                    "OutputChar" => {
+                        print!("{}", stack.pop().unwrap() as u8 as char);
+                    },
+                    "OutputNumber" => {
+                        print!("{}", stack.pop().unwrap());
+                    },
+                    "ReadChar" => {
+                        //TODO
+                    }
+                    "ReadNumber" => {
+                        //TODO
+                    }
+                    _ => {}
+                }
+            }
         }
+        ptr += 1;
     }
 }
 

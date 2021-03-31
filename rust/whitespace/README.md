@@ -1,3 +1,6 @@
 # Whitespace interpreter
 
-wip
+## How to run
+```
+cargo run ./samples/fizzbuzz.ws
+```
