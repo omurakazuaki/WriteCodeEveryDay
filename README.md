@@ -2,8 +2,8 @@
 
 ## Continuous Commit Recording
 
-- 🥇 Highest record: **38** days
-- 😊 Latest record: **38** days ( **62** days to reach 🎉**100** days anniversary )
+- 🥇 Highest record: **39** days
+- 😊 Latest record: **39** days ( **61** days to reach 🎉**100** days anniversary )
 
 ## Commit Calendar
 
@@ -25,3 +25,11 @@ Sun|Mon|Tue|Wed|Thu|Fri|Sat
 14 🍺<br>[actix sample](./rust/actix-sample)|15 🍺<br>[life game](./rust/lifegame)|16 🍺<br>[wasm with rust](./rust/wasm)|17 🍺<br>[wasm-game-of-life](./rust/wasm-game-of-life)|18 🍺<br>[yew-app](./rust/yew-app)|19 🍺<br>[piet: wip](./rust/piet-interpreter)|20 🍺<br>[piet](./rust/piet)
 21 🍺<br>[piet refactor: wip](./rust/piet-refactor)|22 🍺<br>[bf-interoreter:update](./node/brainfuck-interpreter)|23 🍺<br>[bfi: update](./node/brainfuck-interpreter)|24 🍺<br>[p2gvsce: update](./node/path2GithubVsce)|25 🍺<br>[cellular automaton](./rust/cellular-automaton)|26 🍺<br>[diesel-rs](./rust/diesel)|27 🍺<br>[diesel: r2d2](./rust/diesel)
 28 🍺<br>[diesel x actix](./rust/diesel)|29 🍺<br>[diesel: relation](./rust/diesel)|30 🍺<br>[whitespace: wip](./rust/whitespace)|31 🍺<br>[whitespace: draft](./rust/whitespace)|-|-|-
+#### 4
+Sun|Mon|Tue|Wed|Thu|Fri|Sat
+-|-|-|-|-|-|-
+-|1 🍺<br>[whitespace: final](./rust/whitespace)|-|-|4<br>-|5<br>-|6<br>-
+7<br>-|8<br>-|9<br>-|10<br>-|11<br>-|12<br>-|13<br>-
+14<br>-|15<br>-|16<br>-|17<br>-|18<br>-|19<br>-|20<br>-
+21<br>-|22<br>-|23<br>-|24<br>-|25<br>-|26<br>-|27<br>-
+28<br>-|29<br>-|30<br>-|31<br>-|32<br>-|33<br>-|-
