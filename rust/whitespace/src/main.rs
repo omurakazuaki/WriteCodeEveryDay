@@ -1,6 +1,6 @@
 use std::env;
 use std::fs;
-use std::io::{self};
+use std::io::{self, Read};
 use std::collections::HashMap;
 
 #[derive(Debug)]
@@ -31,6 +31,8 @@ fn tokenized(code: &str) -> Result<Vec<Operation>, ()> {
             Command{name: "Duplicate", token: "\n ", is_param: false},
             Command{name: "Swap", token: "\n\t", is_param: false},
             Command{name: "Discard", token: "\n\n", is_param: false},
+            Command{name: "Copy", token: "\t ", is_param: true},
+            Command{name: "Slide", token: "\t\n", is_param: true},
         ]},
         Imp{name: "Arithmetic", token: "\t ", commands: vec![
             Command{name: "Addition", token: "  ", is_param: false},
@@ -96,8 +98,10 @@ fn run(source: &str) {
 
     let code: String = source.chars().filter(|c| *c == ' ' || *c == '\t' || *c == '\n').collect();
     let operations: Vec<Operation> = tokenized(&code).unwrap();
+    //operations.iter().for_each(|op| println!("{:?}", op));
 
     let mut stack: Vec<isize> = vec![];
+    let mut heap: HashMap<isize, isize> = HashMap::new();
     let mut call_stack: Vec<usize> = vec![];
     let marks: HashMap<&str, usize> = operations.iter()
         .enumerate()
@@ -107,19 +111,23 @@ fn run(source: &str) {
             acc
         });
     let mut ptr: usize = 0;
+    let mut read = stdin_reader();
+    let param_to_number = |param: &str| -> isize {
+        param[1..].chars().fold(0, |acc, c| {
+            (acc << 1) + if c == ' ' { 0 } else { 1 }
+        }) * if param.chars().nth(0).unwrap() == ' ' { 1 } else { -1 }
+    };
     loop {
         match operations.get(ptr) {
             None => break,
             Some(op) => {
+                //println!("{:?} {:?} {:?}", op, stack, heap);
                 match op.name {
                     "Push" => {
-                        let int_val = op.param.unwrap().chars().fold(0, |acc, c| {
-                            (acc << 1) + if c == ' ' { 0 } else { 1 }
-                        });
-                        stack.push(int_val);
+                        stack.push(param_to_number(op.param.unwrap()));
                     },
                     "Duplicate" => {
-                        stack.push(stack.get(stack.len() - 1).unwrap().clone());
+                        stack.push(stack.last().unwrap().clone());
                     },
                     "Swap" => {
                         let a = stack.pop().unwrap();
@@ -129,6 +137,13 @@ fn run(source: &str) {
                     },
                     "Discard" => {
                         stack.pop();
+                    },
+                    "Copy" => {
+                        let index = stack.len() as isize - param_to_number(op.param.unwrap()) - 1;
+                        stack.push(stack.get(index as usize).unwrap().clone());
+                    },
+                    "Slide" => {
+                        //let count = param_to_number(op.param.unwrap()) as usize;
                     },
                     "Addition" => {
                         let a = stack.pop().unwrap();
@@ -156,11 +171,15 @@ fn run(source: &str) {
                         stack.push(b % a);
                     },
                     "Store" => {
-                        //TODO
-                    }
+                        let val = stack.pop().unwrap();
+                        let addr = stack.pop().unwrap();
+                        heap.insert(addr, val);
+                    },
                     "Retrieve" => {
-                        //TODO
-                    }
+                        let addr = stack.pop().unwrap();
+                        let val = heap.get(&addr).unwrap_or(&0);
+                        stack.push(val.clone());
+                    },
                     "Call" => {
                         call_stack.push(ptr.clone());
                         ptr = marks.get(op.param.unwrap()).unwrap().clone();
@@ -191,16 +210,41 @@ fn run(source: &str) {
                         print!("{}", stack.pop().unwrap());
                     },
                     "ReadChar" => {
-                        //TODO
-                    }
+                        let val = read();
+                        let addr = stack.pop().unwrap();
+                        heap.insert(addr, val);
+                    },
                     "ReadNumber" => {
-                        //TODO
-                    }
+                        let mut buf = String::new();
+                        io::stdin().read_line(&mut buf).unwrap();
+                        let val = buf.trim().parse::<isize>().unwrap();
+                        let addr = stack.pop().unwrap();
+                        heap.insert(addr, val);
+                    },
                     _ => {}
                 }
             }
         }
         ptr += 1;
+    }
+}
+
+fn stdin_reader() -> impl FnMut() -> isize {
+    let mut buff: Vec<isize> = vec![];
+    move || -> isize {
+        if buff.is_empty() {
+            for byte in io::stdin().bytes() {
+                match byte {
+                    Ok(b) => buff.push(b as isize),
+                    Err(_) => buff.push(0)
+                }
+            }
+        }
+        if buff.is_empty() {
+            return -1;
+        } else {
+            return buff.drain(0..1).as_slice()[0];
+        }
     }
 }
 
