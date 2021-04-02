@@ -2,8 +2,8 @@
 
 ## Continuous Commit Recording
 
-- 🥇 Highest record: **39** days
-- 😊 Latest record: **39** days ( **61** days to reach 🎉**100** days anniversary )
+- 🥇 Highest record: **40** days
+- 😊 Latest record: **40** days ( **60** days to reach 🎉**100** days anniversary )
 
 ## Commit Calendar
 
@@ -28,7 +28,7 @@ Sun|Mon|Tue|Wed|Thu|Fri|Sat
 #### 4
 Sun|Mon|Tue|Wed|Thu|Fri|Sat
 -|-|-|-|-|-|-
--|-|-|-|1 🍺<br>[whitespace: final](./rust/whitespace)|2 🍺<br>-|3 🍺<br>-
+-|-|-|-|1 🍺<br>[whitespace: final](./rust/whitespace)|2 🍺<br>[mdCalendar: bugfix](./node/mdCalendar)|3 🍺<br>-
 4 🍺<br>-|5 🍺<br>-|6 🍺<br>-|7 🍺<br>-|8 🍺<br>-|9 🍺<br>-|10 🍺<br>-
 11 🍺<br>-|12 🍺<br>-|13 🍺<br>-|14 🍺<br>-|15 🍺<br>-|16 🍺<br>-|17 🍺<br>-
 18 🍺<br>-|19 🍺<br>-|20 🍺<br>-|21 🍺<br>-|22 🍺<br>-|23 🍺<br>-|24 🍺<br>-
