@@ -36,7 +36,7 @@ const header = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
           `#### ${i}`,
           header.join('|'),
           header.map(_=>'-').join('|'),
-          ...chunk(month.map(data => data ? `${data.date}${data.log ? ' 🍺' : ''}<br>${data.log}` : '-'), header.length)
+          ...chunk(month.map(data => data ? `${data.date}${data.log != '-' ? ' 🍺' : ''}<br>${data.log}` : '-'), header.length)
           .map(week => [...week].join('|'))
         ].join('\n') + '\n';
       }
