@@ -11,18 +11,16 @@ const header = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
     if (!acc[year]) {
       acc[year] = [];
     }
+    const lastDay = new Date(year, month, 0);
+    const blankTail = 6 - lastDay.getDay();
+    const blankHead = 7 - (lastDay.getDate() + blankTail) % 7;
     if (!acc[year][Number(month)]) {
-      const lastDay = new Date(year, month, 0);
-      const calendar = new Array(lastDay.getDate()).fill(null).map((_, i) => {
-        return '-';
-      });
-      const blankTail = 6 - lastDay.getDay();
-      const blankHead = 7 - (lastDay.getDate() + blankTail) % 7;
+      const calendar = new Array(lastDay.getDate()).fill(null).map((_, i) => ({date: i + 1, log: '-'}));
       calendar.unshift(...new Array(blankHead).fill(null));
       calendar.push(...new Array(blankTail).fill(null));
       acc[year][Number(month)] = calendar;
     }
-    acc[year][Number(month)][Number(date)] = rawData[dateAsStr].map(log=>`[${log.message}](${path.dirname(log.file)})`).join('<br>');
+    acc[year][Number(month)][blankHead + Number(date) - 1].log = rawData[dateAsStr].map(log=>`[${log.message}](${path.dirname(log.file)})`).join('<br>');
     return acc;
   }, {});
 
@@ -38,7 +36,7 @@ const header = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
           `#### ${i}`,
           header.join('|'),
           header.map(_=>'-').join('|'),
-          ...chunk(month.map((date, i) => date ? `${i}${date !== '-' ? ' 🍺' : ''}<br>${date}` : '-'), header.length)
+          ...chunk(month.map(data => data ? `${data.date}${data.log ? ' 🍺' : ''}<br>${data.log}` : '-'), header.length)
           .map(week => [...week].join('|'))
         ].join('\n') + '\n';
       }

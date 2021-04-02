@@ -113,9 +113,11 @@ fn run(source: &str) {
     let mut ptr: usize = 0;
     let mut read = stdin_reader();
     let param_to_number = |param: &str| -> isize {
-        param[1..].chars().fold(0, |acc, c| {
+        let mut chars = param.chars();
+        let sign = if chars.nth(0).unwrap() == ' ' { 1 } else { -1 };
+        chars.fold(0, |acc, c| {
             (acc << 1) + if c == ' ' { 0 } else { 1 }
-        }) * if param.chars().nth(0).unwrap() == ' ' { 1 } else { -1 }
+        }) * sign
     };
     loop {
         match operations.get(ptr) {
