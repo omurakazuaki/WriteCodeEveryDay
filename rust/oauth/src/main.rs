@@ -26,25 +26,20 @@ struct CallbackParams {
 
 #[get("/callback")]
 async fn callback(params: web::Query<CallbackParams>) -> Result<HttpResponse, Error> {
-    let mut body = HashMap::new();
     let client_id = env::var("CLIENT_ID").unwrap();
     let client_secret = env::var("CLIENT_SECRET").unwrap();
-    body.insert("client_id", &client_id);
-    body.insert("client_secret ", &client_secret);
-    body.insert("code", &params.code);
     let client = reqwest::Client::new();
-    let resp = client.post("https://github.com/login/oauth/access_token")
+    let url = format!("https://github.com/login/oauth/access_token?client_id={}&client_secret={}&code={}", &client_id, &client_secret, &params.code);
+    let resp = client.post(&url)
         .header(reqwest::header::ACCEPT, "application/json")
-        .json(&body)
         .send()
         .await
         .unwrap();
     let body = resp.text().await.unwrap();
-    // let json: serde_json::Value = serde_json::from_str(&body)?;
-    // let obj = json.as_object().unwrap();
-    // let access_token = obj.get("access_token").unwrap();
+    let map = serde_json::from_str::<HashMap<&str, &str>>(&body).unwrap();
+    let access_token = map.get("access_token").unwrap();
 
-    Ok(HttpResponse::Ok().content_type("text/plane").body(body))
+    Ok(HttpResponse::Ok().content_type("text/plane").body(access_token.to_string()))
 }
 
 #[actix_web::main]
