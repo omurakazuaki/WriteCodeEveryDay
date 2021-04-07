@@ -62,9 +62,9 @@ async fn callback(session: Session, params: web::Query<CallbackParams>) -> Resul
     let client_id = env::var("CLIENT_ID").unwrap();
     let client_secret = env::var("CLIENT_SECRET").unwrap();
     let client = reqwest::Client::new();
-    let url = format!("https://github.com/login/oauth/access_token?client_id={}&client_secret={}&code={}", &client_id, &client_secret, &params.code);
-    let res = client.post(&url)
+    let res = client.post("https://github.com/login/oauth/access_token")
         .header(reqwest::header::ACCEPT, "application/json")
+        .form(&[("client_id", &client_id), ("client_secret", &client_secret), ("code", &params.code)])
         .send()
         .await
         .unwrap();

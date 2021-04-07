@@ -39,11 +39,11 @@ struct ErrorResponse {
 async fn run() {
     dotenv().ok();
     let client_id = env::var("CLIENT_ID").unwrap();
-
+    let scope = "user:email".to_string();
     let client = reqwest::Client::new();
-    let post_device_code_url = format!("https://github.com/login/device/code?client_id={}&scope=user:email", client_id);
-    let post_device_code_res: PostDeviceCodeResponse = client.post(&post_device_code_url)
+    let post_device_code_res: PostDeviceCodeResponse = client.post("https://github.com/login/device/code")
         .header(reqwest::header::ACCEPT, "application/json")
+        .form(&[("client_id", &client_id), ("scope", &scope)])
         .send()
         .await
         .unwrap()
@@ -56,10 +56,9 @@ async fn run() {
 
     loop {
         thread::sleep(Duration::from_secs(post_device_code_res.interval));
-        let post_access_token_url = format!("https://github.com/login/oauth/access_token?client_id={}&device_code={}&grant_type=urn:ietf:params:oauth:grant-type:device_code",
-            client_id, post_device_code_res.device_code);
-        let res_as_text = client.post(&post_access_token_url)
+        let res_as_text = client.post("https://github.com/login/oauth/access_token")
             .header(reqwest::header::ACCEPT, "application/json")
+            .form(&[("client_id", &client_id), ("device_code", &post_device_code_res.device_code), ("grant_type", &"urn:ietf:params:oauth:grant-type:device_code".to_string())])
             .send()
             .await
             .unwrap()
