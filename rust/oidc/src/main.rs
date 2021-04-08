@@ -1,6 +1,5 @@
 extern crate dotenv;
 
-use std::collections::HashMap;
 use std::env;
 use dotenv::dotenv;
 use serde::Deserialize;
@@ -10,12 +9,18 @@ use tera::{Tera, Context};
 use crypto::digest::Digest;
 use crypto::sha2::Sha256;
 use url::form_urlencoded;
+use base64;
 
 #[derive(Deserialize, Debug)]
 struct User {
-    id: isize,
-    login: String,
-    avatar_url: String
+    sub: String,
+    name: String,
+    given_name: String,
+    family_name: String,
+    picture: String,
+    email: String,
+    email_verified: bool,
+    locale: String
 }
 
 #[get("/")]
@@ -25,9 +30,18 @@ async fn index(templates: web::Data<Tera>, session: Session) -> Result<HttpRespo
             .header(header::LOCATION, "/auth")
             .finish()),
         Some(access_token) => {
+            let user_info_url = env::var("USER_INFO_URL").unwrap();
+            let client = reqwest::Client::new();
+            let user = client.get(&user_info_url)
+                .header(reqwest::header::AUTHORIZATION, format!("Bearer {}", &access_token))
+                .send()
+                .await
+                .unwrap()
+                .json::<User>()
+                .await
+                .unwrap();
             let mut ctx = Context::new();
-            //ctx.insert("name", &user.login);
-            ctx.insert("name", &access_token);
+            ctx.insert("name", &user.name);
             let view = templates.render("index.html", &ctx)
                 .map_err(|e| error::ErrorInternalServerError(e))?;
             Ok(HttpResponse::Ok().content_type("text/html").body(view))
@@ -50,7 +64,7 @@ async fn auth(templates: web::Data<Tera>, session: Session) -> Result<HttpRespon
     let query_parameters = form_urlencoded::Serializer::new(String::new())
         .append_pair("response_type", "id_token code")
         .append_pair("client_id", &client_id)
-        .append_pair("scope", "openid email")
+        .append_pair("scope", "openid email profile")
         .append_pair("redirect_uri", &redirect_uri)
         .append_pair("state", &state)
         .append_pair("nonce", &nonce)
@@ -72,9 +86,17 @@ struct CallbackParams {
     id_token: String
 }
 
+#[derive(Deserialize, Debug)]
+struct TokenResponse {
+    access_token: String,
+    expires_in: u64,
+    scope: String,
+    token_type: String,
+    id_token: String,
+}
+
 #[get("/callback")]
 async fn callback(session: Session, params: web::Query<CallbackParams>) -> Result<HttpResponse, Error> {
-    println!("{:?}", params);
     match session.get::<String>("state").unwrap() {
         None => Ok(HttpResponse::BadRequest().finish()),
         Some(state) => {
@@ -84,35 +106,53 @@ async fn callback(session: Session, params: web::Query<CallbackParams>) -> Resul
                 let client_secret = env::var("CLIENT_SECRET").unwrap();
                 let redirect_uri = env::var("REDIRECT_URI").unwrap();
                 let client = reqwest::Client::new();
-                let res = client.post(&token_url)
+                let token_res = client.post(&token_url)
                     .header(reqwest::header::CONTENT_TYPE, "application/x-www-form-urlencoded")
                     .form(&[
-                        ("code", &params.code),
-                        ("client_id", &client_id),
-                        ("client_secret", &client_secret),
-                        ("redirect_uri", &redirect_uri),
-                        ("grant_type", &"authorization_code".to_string())
+                        ("code", params.code.clone()),
+                        ("client_id", client_id),
+                        ("client_secret", client_secret),
+                        ("redirect_uri", redirect_uri),
+                        ("grant_type", "authorization_code".to_string())
                         ])
                     .send()
                     .await
+                    .unwrap()
+                    .json::<TokenResponse>()
+                    .await
                     .unwrap();
-                let body = res.text().await.unwrap();
-                let map = serde_json::from_str::<HashMap<&str, &str>>(&body).unwrap();
-                println!("{:?}", map);
-                let access_token: &str = map.get("access_token").unwrap();
 
-                session.set("access_token", access_token)?;
+                match verify_id_token(&token_res.id_token) {
+                    Err(_) => Ok(HttpResponse::BadRequest().finish()),
+                    Ok(_) => {
+                        let access_token = &token_res.access_token;
 
-                Ok(HttpResponse::TemporaryRedirect()
-                    .header(header::LOCATION, "/")
-                    .finish()
-                )
+                        session.set("access_token", access_token)?;
+
+                        Ok(HttpResponse::TemporaryRedirect()
+                            .header(header::LOCATION, "/")
+                            .finish()
+                        )
+                    }
+                }
             } else {
                 Ok(HttpResponse::BadRequest().finish())
             }
         }
     }
 
+}
+
+fn verify_id_token(id_token: &str) -> std::io::Result<()> {
+    let vec: Vec<&str> = id_token.split(".").collect();
+    let header = String::from_utf8(base64::decode(vec.get(0).unwrap()).unwrap()).unwrap();
+    let payload = String::from_utf8(base64::decode(vec.get(1).unwrap()).unwrap()).unwrap();
+    let sign = vec.get(2).unwrap();
+
+
+    println!("id_token: {} {} {}", header, payload, sign);
+    // TODO: verify id_token
+    Ok(())
 }
 
 #[actix_web::main]
