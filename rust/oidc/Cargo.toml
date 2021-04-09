@@ -17,3 +17,5 @@ reqwest = { version = "0.10", features = ["json"] }
 rust-crypto = "0.2.36"
 url = "2.2.1"
 base64 = "0.13.0"
+ring = "0.16.20"
+untrusted = "0.7.1"

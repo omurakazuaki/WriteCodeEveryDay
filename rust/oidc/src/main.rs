@@ -1,4 +1,5 @@
 extern crate dotenv;
+extern crate untrusted;
 
 use std::env;
 use dotenv::dotenv;
@@ -10,6 +11,7 @@ use crypto::digest::Digest;
 use crypto::sha2::Sha256;
 use url::form_urlencoded;
 use base64;
+use ring::signature;
 
 #[derive(Deserialize, Debug)]
 struct User {
@@ -123,7 +125,7 @@ async fn callback(session: Session, params: web::Form<CallbackParams>) -> Result
                     .await
                     .unwrap();
 
-                match verify_id_token(&token_res.id_token) {
+                match verify_id_token(&token_res.id_token).await {
                     Err(_) => Ok(HttpResponse::BadRequest().finish()),
                     Ok(_) => {
                         let access_token = &token_res.access_token;
@@ -141,13 +143,51 @@ async fn callback(session: Session, params: web::Form<CallbackParams>) -> Result
 
 }
 
-fn verify_id_token(id_token: &str) -> std::io::Result<()> {
-    let vec: Vec<&str> = id_token.split(".").collect();
-    let header = String::from_utf8(base64::decode(vec.get(0).unwrap()).unwrap()).unwrap();
-    let payload = String::from_utf8(base64::decode(vec.get(1).unwrap()).unwrap()).unwrap();
-    let sign = vec.get(2).unwrap();
+#[derive(Deserialize, Debug)]
+struct Jwk {
+    alg: String,
+    kid: String,
+    n: String,
+    e: String
+}
 
-    println!("id_token: {} {} {:?}", header, payload, sign);
+#[derive(Deserialize, Debug)]
+struct Jwks {
+    keys: Vec<Jwk>
+}
+
+#[derive(Deserialize, Debug)]
+struct IdTokenHeader {
+    alg: String,
+    kid: String
+}
+
+async fn verify_id_token(id_token: &str) -> std::io::Result<()> {
+    println!("{}", id_token);
+    let splits: Vec<&str> = id_token.split(".").collect();
+    let header = serde_json::from_str::<IdTokenHeader>(&String::from_utf8(base64::decode(splits.get(0).unwrap()).unwrap()).unwrap()).unwrap();
+    let payload = String::from_utf8(base64::decode(splits.get(1).unwrap()).unwrap()).unwrap();
+    let sign = base64::decode_config(splits.get(2).unwrap(), base64::URL_SAFE).unwrap();
+    println!("id_token: {:?} {} {:?}", &header, &payload, &sign);
+    let certs_url = env::var("CERTS_URL").unwrap();
+    let client = reqwest::Client::new();
+    let jwks = client.get(&certs_url)
+        .send()
+        .await
+        .unwrap()
+        .json::<Jwks>()
+        .await
+        .unwrap();
+
+    let jwk = jwks.keys.iter()
+        .find(|jwk| jwk.alg == header.alg && jwk.kid == header.kid)
+        .unwrap();
+    let e_hex = base64::decode_config(&jwk.e, base64::URL_SAFE).unwrap();
+    println!("jwk: {:?} {:?} {:?}", &jwk, &e_hex, jwk.n);
+    let n_hex = base64::decode_config(&jwk.n, base64::URL_SAFE).unwrap();
+    println!("jwk: {:?} {:?} {:?}", &jwk, &e_hex, &n_hex);
+
+
     // TODO: verify id_token
     Ok(())
 }
