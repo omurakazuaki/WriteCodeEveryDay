@@ -4,7 +4,7 @@ use std::env;
 use dotenv::dotenv;
 use serde::Deserialize;
 use actix_session::{CookieSession, Session};
-use actix_web::{middleware::Logger, get, web, App, http::{header}, HttpResponse, HttpServer, Result, Error, error};
+use actix_web::{middleware::Logger, get, post, web, App, http::{header}, HttpResponse, HttpServer, Result, Error, error};
 use tera::{Tera, Context};
 use crypto::digest::Digest;
 use crypto::sha2::Sha256;
@@ -68,6 +68,7 @@ async fn auth(templates: web::Data<Tera>, session: Session) -> Result<HttpRespon
         .append_pair("redirect_uri", &redirect_uri)
         .append_pair("state", &state)
         .append_pair("nonce", &nonce)
+        .append_pair("response_mode", "form_post")
         .finish();
     ctx.insert("auth_url", &auth_url);
     ctx.insert("query_parameters", &query_parameters);
@@ -95,8 +96,8 @@ struct TokenResponse {
     id_token: String,
 }
 
-#[get("/callback")]
-async fn callback(session: Session, params: web::Query<CallbackParams>) -> Result<HttpResponse, Error> {
+#[post("/callback")]
+async fn callback(session: Session, params: web::Form<CallbackParams>) -> Result<HttpResponse, Error> {
     match session.get::<String>("state").unwrap() {
         None => Ok(HttpResponse::BadRequest().finish()),
         Some(state) => {
@@ -129,10 +130,7 @@ async fn callback(session: Session, params: web::Query<CallbackParams>) -> Resul
 
                         session.set("access_token", access_token)?;
 
-                        Ok(HttpResponse::TemporaryRedirect()
-                            .header(header::LOCATION, "/")
-                            .finish()
-                        )
+                        Ok(HttpResponse::Found().header("Location", "/").finish())
                     }
                 }
             } else {
@@ -149,8 +147,7 @@ fn verify_id_token(id_token: &str) -> std::io::Result<()> {
     let payload = String::from_utf8(base64::decode(vec.get(1).unwrap()).unwrap()).unwrap();
     let sign = vec.get(2).unwrap();
 
-
-    println!("id_token: {} {} {}", header, payload, sign);
+    println!("id_token: {} {} {:?}", header, payload, sign);
     // TODO: verify id_token
     Ok(())
 }
