@@ -2,8 +2,8 @@
 
 ## Continuous Commit Recording
 
-- 🥇 Highest record: **47** days
-- 😊 Latest record: **47** days ( **53** days to reach 🎉**100** days anniversary )
+- 🥇 Highest record: **48** days
+- 😊 Latest record: **48** days ( **52** days to reach 🎉**100** days anniversary )
 
 ## Commit Calendar
 
@@ -29,7 +29,7 @@ Sun|Mon|Tue|Wed|Thu|Fri|Sat
 Sun|Mon|Tue|Wed|Thu|Fri|Sat
 -|-|-|-|-|-|-
 -|-|-|-|1 🍺<br>[whitespace: final](./rust/whitespace)|2 🍺<br>[mdCalendar: bugfix](./node/mdCalendar)|3 🍺<br>[rust thread](./rust/thread)
-4 🍺<br>[oauth: wip](./rust/oauth)|5 🍺<br>[oauth: session](./rust/oauth)|6 🍺<br>[oauth device flow](./rust/oauth-device)|7 🍺<br>[OpenID Connect: wip](./rust/oidc)|8 🍺<br>[oidc: fix callback](./rust/oidc)|9 🍺<br>[oidc: vlidate id_token wip](./rust/oidc)|10<br>-
+4 🍺<br>[oauth: wip](./rust/oauth)|5 🍺<br>[oauth: session](./rust/oauth)|6 🍺<br>[oauth device flow](./rust/oauth-device)|7 🍺<br>[OpenID Connect: wip](./rust/oidc)|8 🍺<br>[oidc: fix callback](./rust/oidc)|9 🍺<br>[oidc: vlidate id_token wip](./rust/oidc)|10 🍺<br>[gin-gonic](./go/gin)
 11<br>-|12<br>-|13<br>-|14<br>-|15<br>-|16<br>-|17<br>-
 18<br>-|19<br>-|20<br>-|21<br>-|22<br>-|23<br>-|24<br>-
 25<br>-|26<br>-|27<br>-|28<br>-|29<br>-|30<br>-|-
