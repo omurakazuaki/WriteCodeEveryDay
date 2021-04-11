@@ -1,5 +1,4 @@
 extern crate dotenv;
-extern crate untrusted;
 
 use std::env;
 use dotenv::dotenv;
@@ -11,7 +10,8 @@ use crypto::digest::Digest;
 use crypto::sha2::Sha256;
 use url::form_urlencoded;
 use base64;
-use ring::signature;
+use num_bigint::{BigInt};
+use num_traits::{Zero, One};
 
 #[derive(Deserialize, Debug)]
 struct User {
@@ -163,7 +163,6 @@ struct IdTokenHeader {
 }
 
 async fn verify_id_token(id_token: &str) -> std::io::Result<()> {
-    println!("{}", id_token);
     let splits: Vec<&str> = id_token.split(".").collect();
     let header = serde_json::from_str::<IdTokenHeader>(&String::from_utf8(base64::decode(splits.get(0).unwrap()).unwrap()).unwrap()).unwrap();
     let payload = String::from_utf8(base64::decode(splits.get(1).unwrap()).unwrap()).unwrap();
@@ -182,14 +181,40 @@ async fn verify_id_token(id_token: &str) -> std::io::Result<()> {
     let jwk = jwks.keys.iter()
         .find(|jwk| jwk.alg == header.alg && jwk.kid == header.kid)
         .unwrap();
-    let e_hex = base64::decode_config(&jwk.e, base64::URL_SAFE).unwrap();
-    println!("jwk: {:?} {:?} {:?}", &jwk, &e_hex, jwk.n);
-    let n_hex = base64::decode_config(&jwk.n, base64::URL_SAFE).unwrap();
-    println!("jwk: {:?} {:?} {:?}", &jwk, &e_hex, &n_hex);
+    let e_bytes = base64::decode_config(&jwk.e, base64::URL_SAFE).unwrap();
+    let n_bytes = base64::decode_config(&jwk.n, base64::URL_SAFE).unwrap();
+    //println!("jwk: {:?} {:?} {:?}", &jwk, &e_bytes, &n_bytes);
 
+    let mut sign_big = sign.iter().fold(BigInt::zero(), |acc, n| acc * 256 + n);
+    let mut e_big = e_bytes.iter().fold(BigInt::zero(), |acc, n| acc * 256 + n);
+    let n_big = n_bytes.iter().fold(BigInt::zero(), |acc, n| acc * 256 + n);
+    //println!("{} {} {}", &sign_big, &e_big, &n_big);
+    let m_big = mod_exp(&mut sign_big, &mut e_big, &n_big);
+    let digit =  &m_big.to_signed_bytes_be();
+    let expect = &digit[digit.len()-32..];
+    //println!("{:?}", expect);
+    let mut hasher = Sha256::new();
+    hasher.input_str(&format!("{}.{}", splits.get(0).unwrap(), splits.get(1).unwrap()));
+    let mut actual = [0u8; 32];
+    hasher.result(&mut actual);
+    //println!("{:?}", hash);
+    assert!(actual == expect);
 
-    // TODO: verify id_token
     Ok(())
+}
+
+fn mod_exp(base: &mut BigInt, exponent: &mut BigInt, modulus: &BigInt) -> BigInt {
+    let one = BigInt::one();
+    let zero = BigInt::zero();
+    let mut result = BigInt::one();
+    while &*exponent > &zero {
+        if &*exponent & &one == one {
+           result = (result * &*base) % modulus;
+        }
+        *base = (&*base * &*base) % modulus;
+        *exponent = &*exponent >> 1usize;
+    }
+    result
 }
 
 #[actix_web::main]
