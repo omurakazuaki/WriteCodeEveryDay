@@ -12,6 +12,8 @@ use url::form_urlencoded;
 use base64;
 use num_bigint::{BigInt};
 use num_traits::{Zero, One};
+use uuid::Uuid;
+use chrono::{Utc, DateTime};
 
 #[derive(Deserialize, Debug)]
 struct User {
@@ -56,12 +58,8 @@ async fn auth(templates: web::Data<Tera>, session: Session) -> Result<HttpRespon
     let auth_url = env::var("AUTH_URL").unwrap();
     let client_id = env::var("CLIENT_ID").unwrap();
     let redirect_uri = env::var("REDIRECT_URI").unwrap();
-    let mut hasher = Sha256::new();
-    hasher.input_str("// TODO: random state");
-    let state = hasher.result_str();
-    let mut hasher = Sha256::new();
-    hasher.input_str("// TODO: random nonce");
-    let nonce = hasher.result_str();
+    let state = Uuid::new_v4().to_hyphenated().to_string();
+    let nonce = Uuid::new_v4().to_hyphenated().to_string();
     let mut ctx = Context::new();
     let query_parameters = form_urlencoded::Serializer::new(String::new())
         .append_pair("response_type", "id_token code")
@@ -125,7 +123,7 @@ async fn callback(session: Session, params: web::Form<CallbackParams>) -> Result
                     .await
                     .unwrap();
 
-                match verify_id_token(&token_res.id_token).await {
+                match verify_id_token(&token_res.id_token, &session).await {
                     Err(_) => Ok(HttpResponse::BadRequest().finish()),
                     Ok(_) => {
                         let access_token = &token_res.access_token;
@@ -162,12 +160,52 @@ struct IdTokenHeader {
     kid: String
 }
 
-async fn verify_id_token(id_token: &str) -> std::io::Result<()> {
+#[derive(Deserialize, Debug)]
+struct IdTokenPayload {
+    iss: String,
+    sub: String,
+    aud: String,
+    exp: i64,
+    iat: i64,
+    nonce: String
+}
+
+async fn verify_id_token(id_token: &str, session: &Session) -> std::io::Result<()> {
     let splits: Vec<&str> = id_token.split(".").collect();
     let header = serde_json::from_str::<IdTokenHeader>(&String::from_utf8(base64::decode(splits.get(0).unwrap()).unwrap()).unwrap()).unwrap();
-    let payload = String::from_utf8(base64::decode(splits.get(1).unwrap()).unwrap()).unwrap();
+    let payload = serde_json::from_str::<IdTokenPayload>(&String::from_utf8(base64::decode(splits.get(1).unwrap()).unwrap()).unwrap()).unwrap();
     let sign = base64::decode_config(splits.get(2).unwrap(), base64::URL_SAFE).unwrap();
-    println!("id_token: {:?} {} {:?}", &header, &payload, &sign);
+    println!("id_token: {:?} {:?}", &header, &payload);
+
+    let issuer = env::var("ISSUER").unwrap();
+    assert!(issuer == payload.iss);
+
+    let client_id = env::var("CLIENT_ID").unwrap();
+    assert!(client_id == payload.aud);
+
+    let now: DateTime<Utc> = Utc::now();
+    assert!(now.timestamp() < payload.exp);
+
+    let nonce = session.get::<String>("nonce").unwrap().unwrap();
+    session.remove("nonce");
+    assert!(nonce == payload.nonce);
+
+    let jwk = fetch_jwk(&header.alg, &header.kid).await;
+    let e = base64::decode_config(jwk.e, base64::URL_SAFE).unwrap();
+    let n = base64::decode_config(jwk.n, base64::URL_SAFE).unwrap();
+    let digest = decode_sign(sign, e, n);
+    let expect = &digest[digest.len()-32..];
+    let mut hasher = Sha256::new();
+    hasher.input_str(&format!("{}.{}", splits.get(0).unwrap(), splits.get(1).unwrap()));
+    let mut actual = [0u8; 32];
+    hasher.result(&mut actual);
+    //println!("{:?} {:?}", actual, expect);
+    assert!(actual == expect);
+
+    Ok(())
+}
+
+async fn fetch_jwk(alg: &str, kid: &str) -> Jwk {
     let certs_url = env::var("CERTS_URL").unwrap();
     let client = reqwest::Client::new();
     let jwks = client.get(&certs_url)
@@ -177,30 +215,17 @@ async fn verify_id_token(id_token: &str) -> std::io::Result<()> {
         .json::<Jwks>()
         .await
         .unwrap();
+    jwks.keys.into_iter()
+        .find(|jwk| jwk.alg == alg && jwk.kid == kid)
+        .unwrap()
+}
 
-    let jwk = jwks.keys.iter()
-        .find(|jwk| jwk.alg == header.alg && jwk.kid == header.kid)
-        .unwrap();
-    let e_bytes = base64::decode_config(&jwk.e, base64::URL_SAFE).unwrap();
-    let n_bytes = base64::decode_config(&jwk.n, base64::URL_SAFE).unwrap();
-    //println!("jwk: {:?} {:?} {:?}", &jwk, &e_bytes, &n_bytes);
-
+fn decode_sign(sign: Vec<u8>, e: Vec<u8>, n: Vec<u8>) -> Vec<u8> {
     let mut sign_big = sign.iter().fold(BigInt::zero(), |acc, n| acc * 256 + n);
-    let mut e_big = e_bytes.iter().fold(BigInt::zero(), |acc, n| acc * 256 + n);
-    let n_big = n_bytes.iter().fold(BigInt::zero(), |acc, n| acc * 256 + n);
-    //println!("{} {} {}", &sign_big, &e_big, &n_big);
+    let mut e_big = e.iter().fold(BigInt::zero(), |acc, n| acc * 256 + n);
+    let n_big = n.iter().fold(BigInt::zero(), |acc, n| acc * 256 + n);
     let m_big = mod_exp(&mut sign_big, &mut e_big, &n_big);
-    let digit =  &m_big.to_signed_bytes_be();
-    let expect = &digit[digit.len()-32..];
-    //println!("{:?}", expect);
-    let mut hasher = Sha256::new();
-    hasher.input_str(&format!("{}.{}", splits.get(0).unwrap(), splits.get(1).unwrap()));
-    let mut actual = [0u8; 32];
-    hasher.result(&mut actual);
-    //println!("{:?}", hash);
-    assert!(actual == expect);
-
-    Ok(())
+    m_big.to_signed_bytes_be()
 }
 
 fn mod_exp(base: &mut BigInt, exponent: &mut BigInt, modulus: &BigInt) -> BigInt {
