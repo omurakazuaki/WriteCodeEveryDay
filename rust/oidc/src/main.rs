@@ -1,4 +1,9 @@
+#[macro_use]
+extern crate diesel;
 extern crate dotenv;
+
+pub mod models;
+pub mod schema;
 
 use std::env;
 use dotenv::dotenv;
@@ -14,43 +19,35 @@ use num_bigint::{BigInt};
 use num_traits::{Zero, One};
 use uuid::Uuid;
 use chrono::{Utc, DateTime};
-
-#[derive(Deserialize, Debug)]
-struct User {
-    sub: String,
-    name: String,
-    given_name: String,
-    family_name: String,
-    picture: String,
-    email: String,
-    email_verified: bool,
-    locale: String
-}
+use diesel::sqlite::SqliteConnection;
+use diesel::r2d2::{ConnectionManager, Pool};
+use diesel::prelude::*;
 
 #[get("/")]
-async fn index(templates: web::Data<Tera>, session: Session) -> Result<HttpResponse, Error> {
-    match session.get::<String>("access_token").unwrap() {
+async fn index(pool: web::Data<Pool<ConnectionManager<SqliteConnection>>>, templates: web::Data<Tera>, session: Session) -> Result<HttpResponse, Error> {
+    match session.get::<i32>("id").unwrap() {
         None => Ok(HttpResponse::TemporaryRedirect()
             .header(header::LOCATION, "/auth")
             .finish()),
-        Some(access_token) => {
-            let user_info_url = env::var("USER_INFO_URL").unwrap();
-            let client = reqwest::Client::new();
-            let user = client.get(&user_info_url)
-                .header(reqwest::header::AUTHORIZATION, format!("Bearer {}", &access_token))
-                .send()
-                .await
-                .unwrap()
-                .json::<User>()
-                .await
-                .unwrap();
-            let mut ctx = Context::new();
-            ctx.insert("name", &user.name);
-            let view = templates.render("index.html", &ctx)
-                .map_err(|e| error::ErrorInternalServerError(e))?;
-            Ok(HttpResponse::Ok().content_type("text/html").body(view))
+        Some(id) => {
+            match find_user_by_id(pool, id) {
+                Err(_) => Ok(HttpResponse::InternalServerError().finish()),
+                Ok(user) => {
+                    let mut ctx = Context::new();
+                    ctx.insert("name", &format!("{} {}", &user.given_name, &user.family_name));
+                    let view = templates.render("index.html", &ctx)
+                        .map_err(|e| error::ErrorInternalServerError(e))?;
+                    Ok(HttpResponse::Ok().content_type("text/html").body(view))
+                }
+            }
         }
     }
+}
+
+#[get("/logout")]
+async fn logout(session: Session) -> Result<HttpResponse, Error> {
+    session.remove("id");
+    Ok(HttpResponse::Found().header("Location", "/").finish())
 }
 
 #[get("/auth")]
@@ -97,9 +94,9 @@ struct TokenResponse {
 }
 
 #[post("/callback")]
-async fn callback(session: Session, params: web::Form<CallbackParams>) -> Result<HttpResponse, Error> {
+async fn callback(pool: web::Data<Pool<ConnectionManager<SqliteConnection>>>, session: Session, params: web::Form<CallbackParams>) -> Result<HttpResponse, Error> {
     match session.get::<String>("state").unwrap() {
-        None => Ok(HttpResponse::BadRequest().finish()),
+        None => Ok(HttpResponse::Unauthorized().finish()),
         Some(state) => {
             if state == params.state {
                 let token_url = env::var("TOKEN_URL").unwrap();
@@ -124,13 +121,16 @@ async fn callback(session: Session, params: web::Form<CallbackParams>) -> Result
                     .unwrap();
 
                 match verify_id_token(&token_res.id_token, &session).await {
-                    Err(_) => Ok(HttpResponse::BadRequest().finish()),
+                    Err(_) => Ok(HttpResponse::Unauthorized().finish()),
                     Ok(_) => {
                         let access_token = &token_res.access_token;
-
-                        session.set("access_token", access_token)?;
-
-                        Ok(HttpResponse::Found().header("Location", "/").finish())
+                        match create_user(pool, access_token).await {
+                            Err(_) => Ok(HttpResponse::InternalServerError().finish()),
+                            Ok(user) => {
+                                session.set("id", user.id)?;
+                                Ok(HttpResponse::Found().header("Location", "/").finish())
+                            }
+                        }
                     }
                 }
             } else {
@@ -138,7 +138,49 @@ async fn callback(session: Session, params: web::Form<CallbackParams>) -> Result
             }
         }
     }
+}
 
+#[derive(Deserialize, Debug)]
+struct UserInfo {
+    sub: String,
+    name: String,
+    given_name: String,
+    family_name: String,
+    picture: String,
+    email: String,
+    email_verified: bool,
+    locale: String
+}
+
+fn find_user_by_id(pool: web::Data<Pool<ConnectionManager<SqliteConnection>>>, id: i32) -> Result<models::User, ()> {
+    let conn = pool.get().expect("database connection error");
+    Ok(schema::users::dsl::users.find(id).first::<models::User>(&conn).expect("find user error"))
+}
+
+async fn create_user(pool: web::Data<Pool<ConnectionManager<SqliteConnection>>>, access_token: &str) -> Result<models::User, ()> {
+    let user_info_url = env::var("USER_INFO_URL").unwrap();
+    let client = reqwest::Client::new();
+    let user_info = client.get(&user_info_url)
+        .header(reqwest::header::AUTHORIZATION, format!("Bearer {}", &access_token))
+        .send()
+        .await
+        .unwrap()
+        .json::<UserInfo>()
+        .await
+        .unwrap();
+    let conn = pool.get().expect("database connection error");
+    match schema::users::dsl::users.filter(schema::users::email.eq(&user_info.email)).first::<models::User>(&conn) {
+        Err(_) => {
+            let new_user = models::NewUser {
+                email: &user_info.email,
+                given_name: &user_info.given_name,
+                family_name: &user_info.family_name
+            };
+            diesel::insert_into(schema::users::table).values(&new_user).execute(&conn).expect("insert error");
+            Ok(schema::users::dsl::users.filter(schema::users::email.eq(&user_info.email)).first::<models::User>(&conn).expect("insert error"))
+        },
+        Ok(user) => Ok(user)
+    }
 }
 
 #[derive(Deserialize, Debug)]
@@ -170,7 +212,7 @@ struct IdTokenPayload {
     nonce: String
 }
 
-async fn verify_id_token(id_token: &str, session: &Session) -> std::io::Result<()> {
+async fn verify_id_token(id_token: &str, session: &Session) -> Result<(), ()> {
     let splits: Vec<&str> = id_token.split(".").collect();
     let header = serde_json::from_str::<IdTokenHeader>(&String::from_utf8(base64::decode(splits.get(0).unwrap()).unwrap()).unwrap()).unwrap();
     let payload = serde_json::from_str::<IdTokenPayload>(&String::from_utf8(base64::decode(splits.get(1).unwrap()).unwrap()).unwrap()).unwrap();
@@ -242,6 +284,12 @@ fn mod_exp(base: &mut BigInt, exponent: &mut BigInt, modulus: &BigInt) -> BigInt
     result
 }
 
+pub fn establish_connection() -> Pool<ConnectionManager<SqliteConnection>> {
+    let database_url = env::var("DATABASE_URL").unwrap();
+    let manager = ConnectionManager::<SqliteConnection>::new(database_url);
+    Pool::builder().max_size(4).build(manager).expect("Failed to create pool")
+}
+
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     dotenv().ok();
@@ -251,7 +299,9 @@ async fn main() -> std::io::Result<()> {
             .wrap(Logger::default())
             .wrap(CookieSession::signed(&[0; 32]).secure(false))
             .data(templates)
+            .data(establish_connection())
             .service(index)
+            .service(logout)
             .service(auth)
             .service(callback)
     })
