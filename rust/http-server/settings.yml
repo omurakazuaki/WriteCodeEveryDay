@@ -19,9 +19,16 @@ types:
   image/jpeg:
     - jpeg
     - jpg
+  image/svg+xml:
+    - svg
+    - svgz
   text/plain:
     - txt
+  text/xml:
+    - xml
   application/javascript:
     - js
   application/json:
     - json
+  application/wasm:
+    - wasm
