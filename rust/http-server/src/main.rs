@@ -1,6 +1,5 @@
 use std::fs::{self, File};
 use std::path::{PathBuf};
-use std::ffi::OsStr;
 use std::io::{Error, Write, BufReader, BufWriter};
 use std::io::prelude::*;
 use std::net::{TcpListener, TcpStream, Shutdown};
@@ -10,6 +9,10 @@ use once_cell::sync::Lazy;
 use serde::{Serialize, Deserialize};
 use tracing::{trace, error, instrument, Level};
 use tracing_subscriber::FmtSubscriber;
+use crypto::digest::Digest;
+use crypto::sha2::Sha256;
+use chrono::offset::Utc;
+use chrono::DateTime;
 
 #[derive(Debug, Serialize, Deserialize)]
 struct Settings {
@@ -30,9 +33,9 @@ impl Settings {
             Err(_) => {
                 Settings {
                     listen: 80,
-                    server_name: "127.0.0.1".to_string(),
-                    root: ".".to_string(),
-                    index: "index.html".to_string(),
+                    server_name: "127.0.0.1".into(),
+                    root: ".".into(),
+                    index: "index.html".into(),
                     types: HashMap::new(),
                     error_pages: HashMap::new(),
                 }
@@ -43,18 +46,20 @@ impl Settings {
 
 static SETTINGS: Lazy<Settings> = Lazy::new(||Settings::load());
 
-fn get_error_page(code: usize) -> Vec<u8> {
-    read_content(&PathBuf::from(&SETTINGS.root).join(&SETTINGS.error_pages.get(&code).unwrap_or(&String::new()))).unwrap_or(Vec::new())
-}
-
-static NOT_FOUND_CONTENT: Lazy<Vec<u8>> = Lazy::new(||get_error_page(404));
-static SERVER_ERROR_CONTENT: Lazy<Vec<u8>> = Lazy::new(||get_error_page(500));
+static MESSAGES: Lazy<HashMap<usize, String>> = Lazy::new(|| {
+    let mut messages = HashMap::new();
+    messages.insert(200, "OK".into());
+    messages.insert(304, "Not Modified".into());
+    messages.insert(404, "Not Found".into());
+    messages.insert(500, "Internal Server Error".into());
+    messages
+});
 
 #[instrument]
 fn worker(stream: TcpStream) -> impl FnMut() -> Result<(), Error> {
     move || -> Result<(), Error> {
         trace!("start {:?}", std::thread::current().id());
-        stream.set_read_timeout(Some(Duration::new(0, 100_000_000)))
+        stream.set_read_timeout(Some(Duration::new(60, 0)))
             .expect("set_read_timeout call failed");
         let mut reader = BufReader::new(&stream);
         let mut writer = BufWriter::new(&stream);
@@ -65,7 +70,7 @@ fn worker(stream: TcpStream) -> impl FnMut() -> Result<(), Error> {
                     match result {
                         None => continue,
                         Some(req) => {
-                            let res = build_response(&req);
+                            let res = build_response(&req, None);
                             writer.write(&res.to_bytes()[..])?;
                             writer.flush()?;
                             trace!("end {:?}", std::thread::current().id());
@@ -104,9 +109,9 @@ fn read_request(reader: &mut BufReader<&TcpStream>) -> Result<Option<Request>, E
     } else {
         let splits: Vec<&str> = first_line.split(" ").collect();
         let mut request = Request{
-            method: splits.get(0).unwrap().trim().to_string(),
-            target: splits.get(1).unwrap().trim().to_string(),
-            version: splits.get(2).unwrap().trim().to_string(),
+            method: splits.get(0).unwrap().trim().into(),
+            target: splits.get(1).unwrap().trim().into(),
+            version: splits.get(2).unwrap().trim().into(),
             headers: HashMap::new(),
             body: None
         };
@@ -117,8 +122,8 @@ fn read_request(reader: &mut BufReader<&TcpStream>) -> Result<Option<Request>, E
                 break;
             }
             let key_value: Vec<&str> = header_line.split(":").collect();
-            let key = key_value.get(0).unwrap().trim().to_string();
-            let val = key_value.get(1).unwrap().trim().to_string();
+            let key = key_value.get(0).unwrap().trim().into();
+            let val = key_value.get(1).unwrap().trim().into();
             request.headers.insert(key, val);
         }
         let len = request.headers.get("Content-Length")
@@ -141,13 +146,22 @@ fn read_request(reader: &mut BufReader<&TcpStream>) -> Result<Option<Request>, E
 
 struct Response {
     version: String,
-    status: u16,
+    status: usize,
     message: String,
     headers: HashMap<String, String>,
     body: Option<Vec<u8>>
 }
 
 impl Response {
+    pub fn new(status: usize, headers: HashMap<String, String>, body: Option<Vec<u8>>) -> Response {
+        Response {
+            version: "HTTP/1.1".into(),
+            status: status,
+            message: MESSAGES.get(&status).unwrap_or(&String::new()).clone(),
+            headers: headers,
+            body: body
+        }
+    }
     pub fn to_bytes(self) -> Vec<u8> {
         let mut res_as_string = format!("{} {} {}\r\n", self.version, self.status, self.message);
         for (key, val) in self.headers.iter() {
@@ -163,65 +177,78 @@ impl Response {
 }
 
 #[instrument]
-fn build_response(req: &Request) -> Response {
+fn build_response(req: &Request, mut status: Option<usize>) -> Response {
     trace!("read {:?}", std::thread::current().id());
-    let mut target_path = PathBuf::from(&SETTINGS.root).join(&req.target.trim_start_matches('/'));
-    if target_path.is_dir() {
-        target_path.push(PathBuf::from(&SETTINGS.index));
-    }
-    let connection = req.headers.get("Connection").unwrap_or(&"keep-alive".to_string()).clone();
-    match fs::canonicalize(&target_path) {
-        Ok(path) => {
-            match read_content(&path) {
-                Ok(content) => {
-                    let mut headers = HashMap::new();
-                    headers.insert("Content-Length".to_string(), content.len().to_string());
-                    headers.insert("Content-Type".to_string(), resolve_content_type(&target_path));
-                    headers.insert("Connection".to_string(), connection);
-                    Response {
-                        version: "HTTP/1.1".to_string(),
-                        status: 200,
-                        message: "OK".to_string(),
-                        headers: headers,
-                        body: Some(content)
-                    }
+    let mut target_path = PathBuf::from(&SETTINGS.root);
+    let path = match status {
+        None => req.target.clone(),
+        Some(sts) => SETTINGS.error_pages.get(&sts).unwrap_or(&String::new()).clone()
+    };
+    target_path.push(&path.trim_start_matches('/'));
+    match fs::metadata(&target_path) {
+        Err(_) => match status {
+            None => build_response(req, Some(404)),
+            Some(sts) => Response::new(sts, HashMap::new(), None)
+        },
+        Ok(meta) => {
+            if meta.is_dir() {
+                target_path.push(PathBuf::from(&SETTINGS.index));
+            }
+            match fs::metadata(&target_path) {
+                Err(_) => match status {
+                    None => build_response(req, Some(404)),
+                    Some(sts) => Response::new(sts, HashMap::new(), None)
                 },
-                Err(_) => {
-                    let content = SERVER_ERROR_CONTENT.clone();
+                Ok(meta) => {
                     let mut headers = HashMap::new();
-                    headers.insert("Content-Length".to_string(), content.len().to_string());
-                    headers.insert("Content-Type".to_string(), "text/html".to_string());
-                    headers.insert("Connection".to_string(), connection);
-                    Response {
-                        version: "HTTP/1.1".to_string(),
-                        status: 500,
-                        message: "Internal Server Error".to_string(),
-                        headers: headers,
-                        body: Some(content)
+                    headers.insert("Content-Length".into(), meta.len().to_string());
+                    headers.insert("Content-Type".into(), resolve_content_type(&target_path));
+                    let connection = req.headers.get("Connection").unwrap_or(&"keep-alive".into()).clone();
+                    headers.insert("Connection".into(), connection);
+                    let date = Utc::now().format("%a, %d %b %Y %T GMT").to_string();
+                    headers.insert("Date".into(), date);
+                    let target_path_as_str = target_path.to_str();
+                    let modified = meta.modified();
+                    if status.is_none() && target_path_as_str.is_some() && modified.is_ok() {
+                        let datetime: DateTime<Utc> = modified.unwrap().into();
+                        let modified_as_str = datetime.format("%a, %d %b %Y %T GMT").to_string();
+                        let mut hasher = Sha256::new();
+                        hasher.input_str(&target_path_as_str.unwrap());
+                        let e_tag = format!("{}-{:x}-{:x}", &hasher.result_str()[..8], meta.len(), datetime.timestamp());
+                        headers.insert("Last-Modified".into(), modified_as_str);
+                        headers.insert("ETag".into(), e_tag);
+                        let cache_control = req.headers.get("Cache-Control").unwrap_or(&String::new()).clone();
+                        let if_none_match = req.headers.get("If-None-Match");
+                        if cache_control != "no-store" {
+                            if if_none_match == headers.get("ETag") {
+                                status = Some(304);
+                            }
+                        }
+                    }
+                    let body = if status == Some(304) || req.method == "HEAD" {
+                        Ok(None)
+                    } else {
+                        read_content(&target_path).map(|content|Some(content))
+                    };
+                    match body {
+                        Err(_) => build_response(req, Some(500)),
+                        Ok(body) => {
+                            let status = status.unwrap_or(200);
+                            Response::new(status, headers, body)
+                        }
                     }
                 }
-            }
-        },
-        Err(_) => {
-            let content = NOT_FOUND_CONTENT.clone();
-            let mut headers = HashMap::new();
-            headers.insert("Content-Length".to_string(), content.len().to_string());
-            headers.insert("Content-Type".to_string(), "text/html".to_string());
-            headers.insert("Connection".to_string(), connection);
-            Response {
-                version: "HTTP/1.1".to_string(),
-                status: 404,
-                message: "Not Found".to_string(),
-                headers: headers,
-                body: Some(content)
             }
         }
     }
 }
 
 fn resolve_content_type(path: &PathBuf) -> String {
-    let ext = path.extension().unwrap_or(OsStr::new("")).to_str().unwrap().to_string();
-    match SETTINGS.types.iter().find(|(_, v)|v.contains(&ext)) {
+    let ext = match path.extension() {
+        None => "",
+        Some(ext) => ext.to_str().unwrap_or("")
+    };
+    match SETTINGS.types.iter().find(|(_, v)|v.contains(&ext.into())) {
         None => String::new(),
         Some((types, _)) => types.clone()
     }
