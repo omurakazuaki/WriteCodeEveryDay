@@ -3,8 +3,8 @@ server_name: localhost
 root: ./root
 index: index.html
 error_pages:
-  404: 404.html
-  500: 50X.html
+  404: ./root/404.html
+  500: ./root/50X.html
 types:
   text/html:
     - html
@@ -22,6 +22,8 @@ types:
   image/svg+xml:
     - svg
     - svgz
+  image/x-icon:
+    - ico
   text/plain:
     - txt
   text/xml:
@@ -32,3 +34,16 @@ types:
     - json
   application/wasm:
     - wasm
+gzip:
+  enabled: true
+  min_length: 16384
+  types:
+    - text/html
+    - text/css
+    - image/gif
+    - image/svg+xml
+    - text/plain
+    - text/xml
+    - application/javascript
+    - application/json
+    - application/wasm
