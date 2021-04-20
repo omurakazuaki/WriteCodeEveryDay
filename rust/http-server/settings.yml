@@ -1,5 +1,5 @@
-listen: 8080
-server_name: localhost
+listen: 80
+server_name: 0.0.0.0
 root: ./root
 index: index.html
 error_pages:
@@ -37,7 +37,8 @@ types:
     - wasm
 gzip:
   enabled: true
-  min_length: 16384
+  comp_level: 6
+  min_length: 0
   types:
     - text/html
     - text/css

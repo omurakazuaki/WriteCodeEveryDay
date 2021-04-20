@@ -8,3 +8,12 @@ services:
       - ${ROOT_DIR}:/usr/share/nginx/html
     ports:
       - 8080:80
+
+  myhttpd:
+    image: myhttpd:latest
+    build:
+      context: .
+    volumes:
+      - ${ROOT_DIR}:/myhttpd/root
+    ports:
+      - 8080:80

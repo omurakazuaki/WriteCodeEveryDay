@@ -20,6 +20,7 @@ use flate2::bufread::GzEncoder;
 #[derive(Debug, Deserialize)]
 struct GzipSettings {
     enabled: bool,
+    comp_level: u32,
     min_length: u64,
     types: Vec<String>
 }
@@ -45,13 +46,14 @@ impl Settings {
             Err(_) => {
                 Settings {
                     listen: 80,
-                    server_name: "127.0.0.1".into(),
+                    server_name: "0.0.0.0".into(),
                     root: ".".into(),
                     index: "index.html".into(),
                     types: HashMap::new(),
                     error_pages: HashMap::new(),
                     gzip: GzipSettings {
                         enabled: true,
+                        comp_level: 6,
                         min_length: 0,
                         types: Vec::new(),
                     },
@@ -77,7 +79,8 @@ static MESSAGES: Lazy<HashMap<usize, String>> = Lazy::new(|| {
 fn worker(stream: TcpStream) -> impl FnMut() -> Result<(), Error> {
     move || -> Result<(), Error> {
         trace!("start {:?}", std::thread::current().id());
-        stream.set_nodelay(true)?;
+        stream.set_nodelay(true)
+            .expect("set_nodelay call failed");
         stream.set_read_timeout(Some(Duration::new(60, 0)))
             .expect("set_read_timeout call failed");
         let mut reader = BufReader::with_capacity(SETTINGS.buffer_size, &stream);
@@ -94,8 +97,7 @@ fn worker(stream: TcpStream) -> impl FnMut() -> Result<(), Error> {
                             let status = res.status.clone();
                             res.write(&mut writer)?;
                             let end = start.elapsed();
-                            info!("{:?} {} {} {} {} {} ({:03}µs)",
-                                std::thread::current().id(),
+                            info!("{} {} {} {} {} ({}µs)",
                                 stream.peer_addr().unwrap(),
                                 req.method,
                                 req.target,
@@ -204,7 +206,11 @@ impl Response {
         match fs::metadata(&target_path) {
             Err(_) => match status {
                 None => Response::build(req, Some(404)),
-                Some(sts) => Response::new(sts, HashMap::new(), None)
+                Some(sts) => {
+                    let mut headers = HashMap::new();
+                    headers.insert("Content-Length".into(), "0".into());
+                    Response::new(sts, headers, None)
+                }
             },
             Ok(meta) => {
                 if meta.is_dir() {
@@ -213,7 +219,11 @@ impl Response {
                 match fs::metadata(&target_path) {
                     Err(_) => match status {
                         None => Response::build(req, Some(404)),
-                        Some(sts) => Response::new(sts, HashMap::new(), None)
+                        Some(sts) => {
+                            let mut headers = HashMap::new();
+                            headers.insert("Content-Length".into(), "0".into());
+                            Response::new(sts, headers, None)
+                        }
                     },
                     Ok(meta) => {
                         let mut headers = HashMap::new();
@@ -257,7 +267,7 @@ impl Response {
                         let reader: Option<Box<dyn Read>> = if status == Some(304) || req.method == "HEAD" {
                             None
                         } else if headers.get("Content-Encoding") == Some(&"gzip".into()) {
-                            Some(Box::new(GzEncoder::new(BufReader::with_capacity(SETTINGS.buffer_size, File::open(target_path).unwrap()), Compression::fast())))
+                            Some(Box::new(GzEncoder::new(BufReader::with_capacity(SETTINGS.buffer_size, File::open(target_path).unwrap()), Compression::new(SETTINGS.gzip.comp_level))))
                         } else{
                             Some(Box::new(BufReader::with_capacity(SETTINGS.buffer_size, File::open(target_path).unwrap())))
                         };
@@ -280,16 +290,15 @@ impl Response {
     }
 
     pub fn write(self, writer: &mut BufWriter<&TcpStream>) -> Result<(), Error> {
-        let mut res_as_string = format!("{} {} {}\r\n", &self.version, &self.status, &self.message);
+        let mut header_as_string = format!("{} {} {}\r\n", &self.version, &self.status, &self.message);
         for (key, val) in self.headers.iter() {
-            res_as_string.push_str(&format!("{}: {}\r\n", &key, &val));
+            header_as_string.push_str(&format!("{}: {}\r\n", &key, &val));
         }
-        res_as_string.push_str("\r\n");
-        let mut res = res_as_string.as_bytes().to_vec();
+        header_as_string.push_str("\r\n");
+        writer.write(header_as_string.as_bytes())?;
+        writer.flush()?;
         let is_chunked = self.headers.get("Transfer-Encoding") == Some(&"chunked".into());
-        if is_chunked {
-            writer.write(res_as_string.as_bytes())?;
-        }
+        let mut body = Vec::new();
         if self.reader.is_some() {
             let mut reader = self.reader.unwrap();
             loop {
@@ -304,16 +313,16 @@ impl Response {
                     writer.flush()?;
                     trace!("write3 {:?}", std::thread::current().id());
                 } else {
-                    res.append(&mut buf[..n].to_vec());
+                    body.extend_from_slice(&mut buf[..n]);
                 }
                 if n == 0 {
                     break;
                 }
             }
-        }
-        if !is_chunked {
-            writer.write(&res[..])?;
-            writer.flush()?;
+            if body.len() > 0 {
+                writer.write(&body[..])?;
+                writer.flush()?;
+            }
         }
         trace!("wrote {:?}", std::thread::current().id());
         Ok(())
