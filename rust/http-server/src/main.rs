@@ -3,11 +3,11 @@ use std::path::{PathBuf};
 use std::io::{Error, Write, BufReader, BufWriter};
 use std::io::prelude::*;
 use std::net::{TcpListener, TcpStream, Shutdown};
-use std::time::Duration;
+use std::time::{Duration, Instant};
 use std::collections::HashMap;
 use once_cell::sync::Lazy;
 use serde::{Deserialize};
-use tracing::{trace, error, instrument, Level};
+use tracing::{info, trace, error, instrument, Level};
 use tracing_subscriber::FmtSubscriber;
 use crypto::digest::Digest;
 use crypto::sha2::Sha256;
@@ -32,7 +32,8 @@ struct Settings {
     index: String,
     types: HashMap<String, Vec<String>>,
     error_pages: HashMap<usize, String>,
-    gzip: GzipSettings
+    gzip: GzipSettings,
+    buffer_size: usize
 }
 
 impl Settings {
@@ -52,8 +53,9 @@ impl Settings {
                     gzip: GzipSettings {
                         enabled: true,
                         min_length: 0,
-                        types: Vec::new()
-                    }
+                        types: Vec::new(),
+                    },
+                    buffer_size: 16384
                 }
             },
         }
@@ -75,18 +77,31 @@ static MESSAGES: Lazy<HashMap<usize, String>> = Lazy::new(|| {
 fn worker(stream: TcpStream) -> impl FnMut() -> Result<(), Error> {
     move || -> Result<(), Error> {
         trace!("start {:?}", std::thread::current().id());
+        stream.set_nodelay(true)?;
         stream.set_read_timeout(Some(Duration::new(60, 0)))
             .expect("set_read_timeout call failed");
-        let mut reader = BufReader::new(&stream);
-        let mut writer = BufWriter::with_capacity(1024 * 16, &stream);
+        let mut reader = BufReader::with_capacity(SETTINGS.buffer_size, &stream);
+        let mut writer = BufWriter::with_capacity(SETTINGS.buffer_size, &stream);
         loop {
             match Request::read(&mut reader) {
                 Err(_) => break,
                 Ok(result) => {
+                    let start = Instant::now();
                     match result {
                         None => continue,
                         Some(req) => {
-                            Response::build(&req, None).write(&mut writer)?;
+                            let res = Response::build(&req, None);
+                            let status = res.status.clone();
+                            res.write(&mut writer)?;
+                            let end = start.elapsed();
+                            info!("{:?} {} {} {} {} {} ({:03}µs)",
+                                std::thread::current().id(),
+                                stream.peer_addr().unwrap(),
+                                req.method,
+                                req.target,
+                                req.version,
+                                status,
+                                end.subsec_micros());
                             trace!("end {:?}", std::thread::current().id());
                             if let Some(val) = req.headers.get("Connection") {
                                 if val == "close" {
@@ -147,7 +162,7 @@ impl Request {
             let mut read_num = 0;
             let mut body: Vec<u8> = Vec::new();
             while len > read_num {
-                let mut buf = [0; 1024];
+                let mut buf = [0; 1024 * 8];
                 let n = reader.read(&mut buf)?;
                 read_num += n;
                 body.extend_from_slice(&mut buf[..n]);
@@ -165,17 +180,17 @@ struct Response {
     status: usize,
     message: String,
     headers: HashMap<String, String>,
-    file: Option<PathBuf>
+    reader: Option<Box<dyn Read>>
 }
 
 impl Response {
-    pub fn new(status: usize, headers: HashMap<String, String>, file: Option<PathBuf>) -> Self {
+    pub fn new(status: usize, headers: HashMap<String, String>, reader: Option<Box<dyn Read>>) -> Self {
         Response {
             version: "HTTP/1.1".into(),
             status: status,
             message: MESSAGES.get(&status).unwrap_or(&String::new()).clone(),
             headers: headers,
-            file: file
+            reader: reader
         }
     }
 
@@ -202,7 +217,6 @@ impl Response {
                     },
                     Ok(meta) => {
                         let mut headers = HashMap::new();
-                        headers.insert("Content-Length".into(), meta.len().to_string());
                         let content_type = Response::resolve_content_type(&target_path);
                         headers.insert("Content-Type".into(), content_type.clone());
                         let connection = req.headers.get("Connection").unwrap_or(&"keep-alive".into()).clone();
@@ -219,13 +233,6 @@ impl Response {
                             let e_tag = format!("{}-{:x}-{:x}", &hasher.result_str()[..8], meta.len(), datetime.timestamp());
                             headers.insert("Last-Modified".into(), modified_as_str);
                             headers.insert("ETag".into(), e_tag);
-                            let cache_control = req.headers.get("Cache-Control");
-                            let if_none_match = req.headers.get("If-None-Match");
-                            if cache_control != Some(&"no-store".into()) {
-                                if if_none_match == headers.get("ETag") {
-                                    status = Some(304);
-                                }
-                            }
                         }
                         let accept_encodings: Vec<&str> = match req.headers.get("Accept-Encoding") {
                             None => Vec::new(),
@@ -233,19 +240,28 @@ impl Response {
                                 .map(|v|v.trim())
                                 .collect()
                         };
-                        if accept_encodings.contains(&"gzip") {
-                            if SETTINGS.gzip.enabled && SETTINGS.gzip.min_length <= meta.len() && SETTINGS.gzip.types.contains(&content_type) {
-                                headers.insert("Content-Encoding".into(), "gzip".into());
-                                headers.insert("Transfer-Encoding".into(), "chunked".into());
-                                headers.remove("Content-Length");
+                        if accept_encodings.contains(&"gzip") && SETTINGS.gzip.enabled && SETTINGS.gzip.min_length <= meta.len() && SETTINGS.gzip.types.contains(&content_type) {
+                            headers.insert("Content-Encoding".into(), "gzip".into());
+                            headers.insert("Transfer-Encoding".into(), "chunked".into());
+                        } else {
+                            headers.insert("Accept-Ranges".into(),"bytes".into());
+                            headers.insert("Content-Length".into(), meta.len().to_string());
+                        }
+                        let cache_control = req.headers.get("Cache-Control");
+                        let if_none_match = req.headers.get("If-None-Match");
+                        if if_none_match.is_some() && cache_control != Some(&"no-store".into()) {
+                            if if_none_match == headers.get("ETag") {
+                                status = Some(304);
                             }
                         }
-                        let file = if status == Some(304) || req.method == "HEAD" {
+                        let reader: Option<Box<dyn Read>> = if status == Some(304) || req.method == "HEAD" {
                             None
-                        } else {
-                            Some(target_path)
+                        } else if headers.get("Content-Encoding") == Some(&"gzip".into()) {
+                            Some(Box::new(GzEncoder::new(BufReader::with_capacity(SETTINGS.buffer_size, File::open(target_path).unwrap()), Compression::fast())))
+                        } else{
+                            Some(Box::new(BufReader::with_capacity(SETTINGS.buffer_size, File::open(target_path).unwrap())))
                         };
-                        Response::new(status.unwrap_or(200), headers, file)
+                        Response::new(status.unwrap_or(200), headers, reader)
                     }
                 }
             }
@@ -264,9 +280,9 @@ impl Response {
     }
 
     pub fn write(self, writer: &mut BufWriter<&TcpStream>) -> Result<(), Error> {
-        let mut res_as_string = format!("{} {} {}\r\n", self.version, self.status, self.message);
+        let mut res_as_string = format!("{} {} {}\r\n", &self.version, &self.status, &self.message);
         for (key, val) in self.headers.iter() {
-            res_as_string.push_str(&format!("{}: {}\r\n", key, val));
+            res_as_string.push_str(&format!("{}: {}\r\n", &key, &val));
         }
         res_as_string.push_str("\r\n");
         let mut res = res_as_string.as_bytes().to_vec();
@@ -274,21 +290,19 @@ impl Response {
         if is_chunked {
             writer.write(res_as_string.as_bytes())?;
         }
-        let is_gzip = self.headers.get("Content-Encoding") == Some(&"gzip".into());
-        if self.file.is_some() {
-            let mut reader: Box<dyn Read> = if is_gzip {
-                Box::new(GzEncoder::new(BufReader::new(File::open(self.file.unwrap())?), Compression::fast()))
-            } else {
-                Box::new(BufReader::new(File::open(self.file.unwrap())?))
-            };
+        if self.reader.is_some() {
+            let mut reader = self.reader.unwrap();
             loop {
-                let mut buf = [0; 1024 * 15];
+                let mut buf = [0; 1024 * 8];
+                trace!("write1 {:?}", std::thread::current().id());
                 let n = reader.read(&mut buf)?;
                 if is_chunked {
+                    trace!("write2 {:?} {}", std::thread::current().id(), n);
                     writer.write(format!("{:02x}\r\n", n).as_bytes())?;
                     writer.write(&mut buf[..n])?;
                     writer.write("\r\n".as_bytes())?;
                     writer.flush()?;
+                    trace!("write3 {:?}", std::thread::current().id());
                 } else {
                     res.append(&mut buf[..n].to_vec());
                 }
@@ -308,7 +322,7 @@ impl Response {
 
 fn main() {
     let subscriber = FmtSubscriber::builder()
-        .with_max_level(Level::TRACE)
+        .with_max_level(Level::INFO)
         .finish();
     tracing::subscriber::set_global_default(subscriber)
         .expect("setting default subscriber failed");
