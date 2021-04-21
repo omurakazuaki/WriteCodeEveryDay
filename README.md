@@ -2,8 +2,8 @@
 
 ## Continuous Commit Recording
 
-- 🥇 Highest record: **58** days
-- 😊 Latest record: **58** days ( **42** days to reach 🎉**100** days anniversary )
+- 🥇 Highest record: **59** days
+- 😊 Latest record: **59** days ( **41** days to reach 🎉**100** days anniversary )
 
 ## Commit Calendar
 
@@ -31,5 +31,5 @@ Sun|Mon|Tue|Wed|Thu|Fri|Sat
 -|-|-|-|1 🍺<br>[whitespace: final](./rust/whitespace)|2 🍺<br>[mdCalendar: bugfix](./node/mdCalendar)|3 🍺<br>[rust thread](./rust/thread)
 4 🍺<br>[oauth: wip](./rust/oauth)|5 🍺<br>[oauth: session](./rust/oauth)|6 🍺<br>[oauth device flow](./rust/oauth-device)|7 🍺<br>[OpenID Connect: wip](./rust/oidc)|8 🍺<br>[oidc: fix callback](./rust/oidc)|9 🍺<br>[oidc: vlidate id_token wip](./rust/oidc)|10 🍺<br>[gin-gonic](./go/gin)
 11 🍺<br>[oidc: validate id_token](./rust/oidc)|12 🍺<br>[oidc: validate id_token](./rust/oidc)|13 🍺<br>[oidc: store user](./rust/oidc)|14 🍺<br>[http-server: base](./rust/http-server)|15 🍺<br>[http-server: build response](./rust/http-server)|16 🍺<br>[http-server: settings](./rust/http-server)|17 🍺<br>[http-server: keep-alive](./rust/http-server)
-18 🍺<br>[http-server: cache control](./rust/http-server)|19 🍺<br>[http-server: gzip](./rust/http-server)|20 🍺<br>[http-server: nodelay](./rust/http-server)|21<br>-|22<br>-|23<br>-|24<br>-
+18 🍺<br>[http-server: cache control](./rust/http-server)|19 🍺<br>[http-server: gzip](./rust/http-server)|20 🍺<br>[http-server: nodelay](./rust/http-server)|21 🍺<br>[epoll](./rust/epoll)|22<br>-|23<br>-|24<br>-
 25<br>-|26<br>-|27<br>-|28<br>-|29<br>-|30<br>-|-
