@@ -1,10 +1,11 @@
-use std::fs;
-use std::path::{PathBuf};
 use std::collections::HashMap;
+use tokio::fs;
+use std::path::{PathBuf};
 use chrono::offset::Utc;
 use chrono::DateTime;
 use crypto::digest::Digest;
 use crypto::sha2::Sha256;
+use async_recursion::async_recursion;
 use crate::request::Request;
 
 pub struct Response {
@@ -46,14 +47,15 @@ impl Response {
         }
     }
 
-    pub fn from_request(req: &Request, mut status: Option<usize>) -> Self {
+    #[async_recursion]
+    pub async fn from_request(req: &Request, mut status: Option<usize>) -> Self {
         let mut target_path = match status {
-            None => PathBuf::from("./root").join(req.target.clone().trim_start_matches('/')),
-            Some(sts) => PathBuf::from(format!("./errors/{}.html", sts))
+            None => PathBuf::from("../epoll/root").join(req.target.clone().trim_start_matches('/')),
+            Some(sts) => PathBuf::from(format!("../epoll/errors/{}.html", sts))
         };
-        match fs::metadata(&target_path) {
+        match fs::metadata(&target_path).await {
             Err(_) => match status {
-                None => Response::from_request(req, Some(404)),
+                None => Response::from_request(req, Some(404)).await,
                 Some(sts) => {
                     let mut headers = HashMap::new();
                     headers.insert("Content-Length".into(), "0".into());
@@ -64,9 +66,9 @@ impl Response {
                 if meta.is_dir() {
                     target_path.push(PathBuf::from("index.html"));
                 }
-                match fs::metadata(&target_path) {
+                match fs::metadata(&target_path).await {
                     Err(_) => match status {
-                        None => Response::from_request(req, Some(404)),
+                        None => Response::from_request(req, Some(404)).await,
                         Some(sts) => {
                             let mut headers = HashMap::new();
                             headers.insert("Content-Length".into(), "0".into());
