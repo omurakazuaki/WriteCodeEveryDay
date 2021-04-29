@@ -3,3 +3,7 @@
 ```sh
 gatsby new gatsby
 ```
+
+```
+npm install --S gatsby-source-strapi
+```
