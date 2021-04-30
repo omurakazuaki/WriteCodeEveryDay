@@ -8,24 +8,39 @@ exports.createPages = async ({ graphql, actions }) => {
           edges {
             node {
               slug
-              title
-              content
-              tags{name}
-              created_at
             }
           }
         }
       }`
     );
-  console.log(`----------------------------------------------`);
   posts.data.allStrapiPost.edges.forEach(({node}) => {
     createPage({
       path: `post/${node.slug}`,
       component: path.resolve('src/templates/post.tsx'),
       context: {
-        data: node
+        slug: node.slug
       }
     });
-    console.log(node);
+  });
+
+  const tags = await graphql(
+    `{
+        allStrapiTag {
+          edges {
+            node {
+              name
+            }
+          }
+        }
+      }`
+    );
+  tags.data.allStrapiTag.edges.forEach(({node}) => {
+    createPage({
+      path: `tag/${node.name}`,
+      component: path.resolve('src/templates/tag.tsx'),
+      context: {
+        name: node.name
+      }
+    });
   });
 };

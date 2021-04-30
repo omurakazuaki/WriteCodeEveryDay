@@ -1,15 +1,23 @@
 import React from 'react'
-import { Link } from 'gatsby'
+import { Link, graphql } from 'gatsby'
 import SEO from "../components/seo"
 import Layout from '../components/layout'
 import ReactMarkdown from 'react-markdown'
-const PostTemplate = ({ data, pageContext }) => {
+
+const PostTemplate = ({ data, _ }) => {
   return (
     <Layout>
-      <SEO title={pageContext.data.title} />
-      <h1>{pageContext.data.title}</h1>
+      <SEO title={data.strapiPost.title} />
+      {
+        data.strapiPost.tags.map(({name})=> {
+          return <span style={{marginRight: '16px'}}>
+            <Link to={`/tag/${name}`}>{name}</Link>
+          </span>
+        })
+      }
+      <h1>{data.strapiPost.title}</h1>
       <ReactMarkdown>
-        {pageContext.data.content}
+        {data.strapiPost.content}
       </ReactMarkdown>
       <p>
         <Link to="/">top</Link>
@@ -17,5 +25,16 @@ const PostTemplate = ({ data, pageContext }) => {
     </Layout>
   )
 }
+
+export const pageQuery =
+  graphql`
+    query($slug: String) {
+      strapiPost(slug: {eq: $slug}) {
+        title
+        content
+        tags{name}
+        created_at
+      }
+  }`;
 
 export default PostTemplate;
