@@ -1,0 +1,12 @@
+# Sidebar navigation
+
+- label: 'Introduction'
+  link: '/'
+- label: Category
+  items:
+    - label: 'Creating docs'
+      link: '/category/creating-docs'
+    - label: 'Navigation'
+      link: '/category/navigation'
+    - label: 'Shadowing'
+      link: '/category/shadowing'
