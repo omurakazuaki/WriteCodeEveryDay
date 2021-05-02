@@ -1,0 +1,97 @@
+---
+title: Flex
+---
+
+## justify-content
+フレックスコンテナーの主軸およびグリッドコンテナーのインライン軸に沿って、中身のアイテムの間や周囲に間隔を配置する方法を定義
+
+### center
+
+アイテムを中央に寄せる
+<iframe style={{border: 'none', width: '100%', resize: 'both'}} srcdoc={`
+  <style>
+    body>div {
+      padding: 20px;
+    }
+    div>div {
+      background: #f6f5f5;
+      padding: 10px;
+      margin: 10px;
+    }
+  </style>
+  <div style="display: flex; justify-content: center">
+    <div>1</div>
+    <div>2</div>
+    <div>3</div>
+    <div>4</div>
+  </div>`}/>
+
+```html
+<div style="display: flex; justify-content: center">
+  <div>1</div>
+  <div>2</div>
+  <div>3</div>
+  <div>4</div>
+</div>
+```
+
+### space-between
+
+各アイテムを均等に配置し最初のアイテムは先頭に寄せ、最後のアイテムは末尾に寄せる
+<iframe style={{border: 'none', width: '100%', resize: 'both'}} srcdoc={`
+  <style>
+    body>div {
+      padding: 20px;
+    }
+    div>div {
+      background: #f6f5f5;
+      padding: 10px;
+      margin: 10px;
+    }
+  </style>
+  <div style="display: flex; justify-content: space-between">
+    <div>1</div>
+    <div>2</div>
+    <div>3</div>
+    <div>4</div>
+  </div>`}/>
+
+```html
+<div style="display: flex; justify-content: space-between">
+  <div>1</div>
+  <div>2</div>
+  <div>3</div>
+  <div>4</div>
+</div>
+```
+
+### space-around
+
+各アイテムを均等に配置し各アイテムの両側に半分の大きさの間隔を置く
+<iframe style={{border: 'none', width: '100%', resize: 'both'}} srcdoc={`
+  <style>
+    body>div {
+      padding: 20px;
+    }
+    div>div {
+      background: #f6f5f5;
+      padding: 10px;
+      margin: 10px;
+    }
+  </style>
+  <div style="display: flex; justify-content: space-around">
+    <div>1</div>
+    <div>2</div>
+    <div>3</div>
+    <div>4</div>
+  </div>`}/>
+
+```html
+<div style="display: flex; justify-content: space-around">
+  <div>1</div>
+  <div>2</div>
+  <div>3</div>
+  <div>4</div>
+</div>
+```
+

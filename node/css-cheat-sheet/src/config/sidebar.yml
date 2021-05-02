@@ -4,9 +4,7 @@
   link: '/'
 - label: Category
   items:
-    - label: 'Creating docs'
-      link: '/category/creating-docs'
-    - label: 'Navigation'
-      link: '/category/navigation'
-    - label: 'Shadowing'
-      link: '/category/shadowing'
+    - label: 'Display'
+      link: '/category/display'
+    - label: 'Flex'
+      link: '/category/flex'

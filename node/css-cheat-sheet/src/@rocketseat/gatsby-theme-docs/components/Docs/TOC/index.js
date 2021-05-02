@@ -59,7 +59,7 @@ export default function TableOfContents({ headings, disableTOC, contentRef }) {
     return (
       <Wrapper>
         <Container>
-          <h2>Test</h2>
+          <h2>Index</h2>
           <nav>
             <ul>
               {headings

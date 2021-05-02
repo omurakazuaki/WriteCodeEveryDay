@@ -1,0 +1,119 @@
+---
+title: Display
+---
+
+## inline
+
+<iframe style={{border: 'none', width: '100%', resize: 'both'}} srcdoc={`
+  <style>
+    body>div {
+      padding: 20px;
+    }
+    div>div {
+      background: #f6f5f5;
+      padding: 10px;
+      margin: 10px;
+    }
+  </style>
+  <div>
+    <div style="display: inline;">1</div>
+    <div style="display: inline;">2</div>
+    <div style="display: inline;">3</div>
+    <div style="display: inline;">4</div>
+  </div>`}/>
+
+```html
+<div>
+  <div style="display: inline;">1</div>
+  <div style="display: inline;">2</div>
+  <div style="display: inline;">3</div>
+  <div style="display: inline;">4</div>
+</div>
+```
+
+## block
+
+<iframe style={{border: 'none', width: '100%', resize: 'both'}} srcdoc={`
+  <style>
+    body>div {
+      padding: 20px;
+    }
+    div>div {
+      background: #f6f5f5;
+      padding: 10px;
+      margin: 10px;
+    }
+  </style>
+  <div style="display: block">
+    <div>1</div>
+    <div>2</div>
+    <div>3</div>
+    <div>4</div>
+  </div>`}/>
+
+```html
+<div style="display: block">
+  <div>1</div>
+  <div>2</div>
+  <div>3</div>
+  <div>4</div>
+</div>
+```
+
+## flex
+
+<iframe style={{border: 'none', width: '100%', resize: 'both'}} srcdoc={`
+  <style>
+    body>div {
+      padding: 20px;
+    }
+    div>div {
+      background: #f6f5f5;
+      padding: 10px;
+      margin: 10px;
+    }
+  </style>
+  <div style="display: flex">
+    <div>1</div>
+    <div>2</div>
+    <div>3</div>
+    <div>4</div>
+  </div>`}/>
+
+```html
+<div style="display: flex">
+  <div>1</div>
+  <div>2</div>
+  <div>3</div>
+  <div>4</div>
+</div>
+```
+
+## grid
+
+<iframe style={{border: 'none', width: '100%', resize: 'both'}} srcdoc={`
+  <style>
+    body>div {
+      padding: 20px;
+    }
+    div>div {
+      background: #f6f5f5;
+      padding: 10px;
+      margin: 10px;
+    }
+  </style>
+  <div style="display: grid; grid-template-columns: 1fr 1fr 1fr">
+    <div>1</div>
+    <div>2</div>
+    <div>3</div>
+    <div>4</div>
+  </div>`}/>
+
+```html
+<div style="display: grid; grid-template-columns: 1fr 1fr 1fr">
+  <div>1</div>
+  <div>2</div>
+  <div>3</div>
+  <div>4</div>
+</div>
+```
