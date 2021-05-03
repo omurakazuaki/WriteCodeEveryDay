@@ -18,8 +18,8 @@ module.exports = {
       options: {
         configPath: `src/config`,
         docsPath: `src/docs`,
-        repositoryUrl: `https://github.com/rocketseat/gatsby-themes`,
-        baseDir: `examples/gatsby-theme-docs`,
+        repositoryUrl: `https://github.com/omurakazuaki/WriteCodeEveryDay`,
+        baseDir: `/node/css-cheat-sheet`,
       },
     },
     {

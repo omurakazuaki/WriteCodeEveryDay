@@ -2,6 +2,39 @@
 title: Flex
 ---
 
+## flex
+
+<iframe style={{border: 'none', width: '100%', resize: 'both'}} srcdoc={`
+  <style>
+    body>div {
+      padding: 20px;
+      width: 500px;
+    }
+    div>div {
+      background: #f6f5f5;
+      border: 1px solid #d3e0ea;
+      padding: 10px;
+      text-align: center;
+    }
+  </style>
+  <div style="display: flex; flex-wrap: wrap;">
+    <div style="flex: 1 1 150px;">1</div>
+    <div style="flex: 1 1 150px;">2</div>
+    <div style="flex: 1 1 150px;">3</div>
+    <div style="flex: 1 1 150px;">4</div>
+    <div style="flex: 1 1 150px;">5</div>
+  </div>`}/>
+
+```html
+<div style="display: flex; flex-wrap: wrap;">
+  <div style="flex: 1 1 150px;">1</div>
+  <div style="flex: 1 1 150px;">2</div>
+  <div style="flex: 1 1 150px;">3</div>
+  <div style="flex: 1 1 150px;">4</div>
+  <div style="flex: 1 1 150px;">5</div>
+</div>
+```
+
 ## justify-content
 フレックスコンテナーの主軸およびグリッドコンテナーのインライン軸に沿って、中身のアイテムの間や周囲に間隔を配置する方法を定義
 
@@ -15,8 +48,9 @@ title: Flex
     }
     div>div {
       background: #f6f5f5;
+      border: 1px solid #d3e0ea;
       padding: 10px;
-      margin: 10px;
+      text-align: center;
     }
   </style>
   <div style="display: flex; justify-content: center">
@@ -45,8 +79,9 @@ title: Flex
     }
     div>div {
       background: #f6f5f5;
+      border: 1px solid #d3e0ea;
       padding: 10px;
-      margin: 10px;
+      text-align: center;
     }
   </style>
   <div style="display: flex; justify-content: space-between">
@@ -75,8 +110,9 @@ title: Flex
     }
     div>div {
       background: #f6f5f5;
+      border: 1px solid #d3e0ea;
       padding: 10px;
-      margin: 10px;
+      text-align: center;
     }
   </style>
   <div style="display: flex; justify-content: space-around">
@@ -95,3 +131,62 @@ title: Flex
 </div>
 ```
 
+## margin
+
+<iframe style={{border: 'none', width: '100%', resize: 'both'}} srcdoc={`
+  <style>
+    body>div {
+      padding: 20px;
+    }
+    div>div {
+      background: #f6f5f5;
+      border: 1px solid #d3e0ea;
+      padding: 10px;
+      text-align: center;
+    }
+  </style>
+  <div style="display: flex">
+    <div style="margin-right: auto">1</div>
+    <div>2</div>
+    <div>3</div>
+    <div style="margin-left: auto">4</div>
+  </div>`}/>
+
+```html
+<div style="display: flex">
+  <div style="margin-right: auto">1</div>
+  <div>2</div>
+  <div>3</div>
+  <div style="margin-left: auto">>4</div>
+</div>
+```
+
+## order
+
+<iframe style={{border: 'none', width: '100%', resize: 'both'}} srcdoc={`
+  <style>
+    body>div {
+      padding: 20px;
+    }
+    div>div {
+      background: #f6f5f5;
+      border: 1px solid #d3e0ea;
+      padding: 10px;
+      text-align: center;
+    }
+  </style>
+  <div style="display: flex;">
+    <div style="order: 4">1</div>
+    <div style="order: 3">2</div>
+    <div style="order: 2">3</div>
+    <div style="order: 1">4</div>
+  </div>`}/>
+
+```html
+<div style="display: flex;">
+  <div style="order: 4">1</div>
+  <div style="order: 3">2</div>
+  <div style="order: 2">3</div>
+  <div style="order: 1">4</div>
+</div>
+```
