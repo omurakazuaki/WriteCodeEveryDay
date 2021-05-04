@@ -2,7 +2,7 @@
 title: Flex
 ---
 
-## flex
+## flex-wrap
 
 <iframe style={{border: 'none', width: '100%', resize: 'both'}} srcdoc={`
   <style>
@@ -32,6 +32,134 @@ title: Flex
   <div style="flex: 1 1 150px;">3</div>
   <div style="flex: 1 1 150px;">4</div>
   <div style="flex: 1 1 150px;">5</div>
+</div>
+```
+
+## flex-grow
+
+<iframe style={{border: 'none', width: '100%', resize: 'both'}} srcdoc={`
+  <style>
+    body {
+      margin: 0
+    }
+    body>div {
+      width: 500px;
+    }
+    div>div {
+      background: #f6f5f5;
+      border: 1px solid #d3e0ea;
+      text-align: center;
+    }
+  </style>
+  <div style="display: flex">
+    <div style="flex-grow: 0">1</div>
+    <div style="flex-grow: 1">2</div>
+    <div style="flex-grow: 2">3</div>
+  </div>`}/>
+
+```html
+<div style="display: flex">
+  <div style="flex-grow: 0">1</div>
+  <div style="flex-grow: 1">2</div>
+  <div style="flex-grow: 2">3</div>
+</div>
+```
+
+## flex-shrink
+
+<iframe style={{border: 'none', width: '100%', resize: 'both'}} srcdoc={`
+  <style>
+    body {
+      margin: 0
+    }
+    body>div {
+      width: 500px;
+    }
+    div>div {
+      background: #f6f5f5;
+      border: 1px solid #d3e0ea;
+      text-align: center;
+    }
+  </style>
+  <div style="display: flex">
+    <div style="flex-shrink: 0; width: 200px;">1</div>
+    <div style="flex-shrink: 1; width: 200px;">2</div>
+    <div style="flex-shrink: 2; width: 200px;">3</div>
+  </div>`}/>
+
+```html
+<div style="display: flex">
+  <div style="flex-shrink: 0; width: 200px;">1</div>
+  <div style="flex-shrink: 1; width: 200px;">2</div>
+  <div style="flex-shrink: 2; width: 200px;">3</div>
+</div>
+```
+
+## flex-direction
+
+<iframe style={{border: 'none', width: '100%', resize: 'both'}} srcdoc={`
+  <style>
+    body>div {
+      padding: 20px;
+    }
+    div>div {
+      background: #f6f5f5;
+      border: 1px solid #d3e0ea;
+      padding: 10px;
+      text-align: center;
+    }
+  </style>
+  <div style="display: flex; flex-direction: row">
+    <div>1</div>
+    <div>2</div>
+    <div>3</div>
+    <div>4</div>
+  </div>
+  <div style="display: flex; flex-direction: row-reverse">
+    <div>1</div>
+    <div>2</div>
+    <div>3</div>
+    <div>4</div>
+  </div>
+  <div style="display: flex; flex-direction: column">
+    <div>1</div>
+    <div>2</div>
+    <div>3</div>
+    <div>4</div>
+  </div>
+  <div style="display: flex; flex-direction: column-reverse">
+    <div>1</div>
+    <div>2</div>
+    <div>3</div>
+    <div>4</div>
+  </div>
+  `}/>
+
+
+```html
+<div style="display: flex; flex-direction: row">
+  <div>1</div>
+  <div>2</div>
+  <div>3</div>
+  <div>4</div>
+</div>
+<div style="display: flex; flex-direction: row-reverse">
+  <div>1</div>
+  <div>2</div>
+  <div>3</div>
+  <div>4</div>
+</div>
+<div style="display: flex; flex-direction: column">
+  <div>1</div>
+  <div>2</div>
+  <div>3</div>
+  <div>4</div>
+</div>
+<div style="display: flex; flex-direction: column-reverse">
+  <div>1</div>
+  <div>2</div>
+  <div>3</div>
+  <div>4</div>
 </div>
 ```
 
