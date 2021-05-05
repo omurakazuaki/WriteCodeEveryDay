@@ -91,3 +91,215 @@ title: Position
   <div style="grid-row: 2 / 3; grid-column: 3 / 4">right</div>
 </div>
 ```
+
+## gap
+
+<iframe style={{border: 'none', width: '100%', resize: 'both'}} srcdoc={`
+  <style>
+    body>div {
+      padding: 20px;
+    }
+    div>div {
+      background: #f6f5f5;
+      border: 1px solid #d3e0ea;
+      padding: 10px;
+      text-align: center;
+    }
+  </style>
+  <div style="display: grid; grid-template-rows: 70px 1fr; grid-template-columns: 100px 1fr 100px; gap: 10px;">
+    <div style="grid-row: 1 / 2; grid-column: 1 / 4">header</div>
+    <div style="grid-row: 2 / 3; grid-column: 1 / 2">left</div>
+    <div style="grid-row: 2 / 3; grid-column: 2 / 3">content</div>
+    <div style="grid-row: 2 / 3; grid-column: 3 / 4">right</div>
+  </div>`}/>
+
+```html
+<div style="display: grid; grid-template-rows: 70px 1fr; grid-template-columns: 100px 1fr 100px; gap: 10px;">
+  <div style="grid-row: 1 / 2; grid-column: 1 / 4">header</div>
+  <div style="grid-row: 2 / 3; grid-column: 1 / 2">left</div>
+  <div style="grid-row: 2 / 3; grid-column: 2 / 3">content</div>
+  <div style="grid-row: 2 / 3; grid-column: 3 / 4">right</div>
+</div>
+```
+
+## justify-content
+
+### start
+
+<iframe style={{border: 'none', width: '100%', resize: 'both'}} srcdoc={`
+  <style>
+    body>div {
+      padding: 20px;
+    }
+    div>div {
+      background: #f6f5f5;
+      border: 1px solid #d3e0ea;
+      padding: 10px;
+      text-align: center;
+    }
+  </style>
+  <div style="display: grid; grid-template-columns: 50px 50px;justify-content: start">
+    <div>1</div>
+    <div>2</div>
+    <div>3</div>
+    <div>4</div>
+  </div>`}/>
+
+```html
+<div style="display: grid; grid-template-columns: 50px 50px;justify-content: start">
+  <div>1</div>
+  <div>2</div>
+  <div>3</div>
+  <div>4</div>
+</div>
+```
+
+### center
+
+<iframe style={{border: 'none', width: '100%', resize: 'both'}} srcdoc={`
+  <style>
+    body>div {
+      padding: 20px;
+    }
+    div>div {
+      background: #f6f5f5;
+      border: 1px solid #d3e0ea;
+      padding: 10px;
+      text-align: center;
+    }
+  </style>
+  <div style="display: grid; grid-template-columns: 50px 50px;justify-content: center">
+    <div>1</div>
+    <div>2</div>
+    <div>3</div>
+    <div>4</div>
+  </div>`}/>
+
+```html
+<div style="display: grid; grid-template-columns: 50px 50px;justify-content: center">
+  <div>1</div>
+  <div>2</div>
+  <div>3</div>
+  <div>4</div>
+</div>
+```
+
+### end
+
+<iframe style={{border: 'none', width: '100%', resize: 'both'}} srcdoc={`
+  <style>
+    body>div {
+      padding: 20px;
+    }
+    div>div {
+      background: #f6f5f5;
+      border: 1px solid #d3e0ea;
+      padding: 10px;
+      text-align: center;
+    }
+  </style>
+  <div style="display: grid; grid-template-columns: 50px 50px;justify-content: end">
+    <div>1</div>
+    <div>2</div>
+    <div>3</div>
+    <div>4</div>
+  </div>`}/>
+
+```html
+<div style="display: grid; grid-template-columns: 50px 50px;justify-content: end">
+  <div>1</div>
+  <div>2</div>
+  <div>3</div>
+  <div>4</div>
+</div>
+```
+
+### space-between
+
+<iframe style={{border: 'none', width: '100%', resize: 'both'}} srcdoc={`
+  <style>
+    body>div {
+      padding: 20px;
+    }
+    div>div {
+      background: #f6f5f5;
+      border: 1px solid #d3e0ea;
+      padding: 10px;
+      text-align: center;
+    }
+  </style>
+  <div style="display: grid; grid-template-columns: 50px 50px;justify-content: space-between">
+    <div>1</div>
+    <div>2</div>
+    <div>3</div>
+    <div>4</div>
+  </div>`}/>
+
+```html
+<div style="display: grid; grid-template-columns: 50px 50px;justify-content: space-between">
+  <div>1</div>
+  <div>2</div>
+  <div>3</div>
+  <div>4</div>
+</div>
+```
+
+### space-around
+
+<iframe style={{border: 'none', width: '100%', resize: 'both'}} srcdoc={`
+  <style>
+    body>div {
+      padding: 20px;
+    }
+    div>div {
+      background: #f6f5f5;
+      border: 1px solid #d3e0ea;
+      padding: 10px;
+      text-align: center;
+    }
+  </style>
+  <div style="display: grid; grid-template-columns: 50px 50px;justify-content: space-around">
+    <div>1</div>
+    <div>2</div>
+    <div>3</div>
+    <div>4</div>
+  </div>`}/>
+
+```html
+<div style="display: grid; grid-template-columns: 50px 50px;justify-content: space-around">
+  <div>1</div>
+  <div>2</div>
+  <div>3</div>
+  <div>4</div>
+</div>
+```
+
+### space-evenly
+
+<iframe style={{border: 'none', width: '100%', resize: 'both'}} srcdoc={`
+  <style>
+    body>div {
+      padding: 20px;
+    }
+    div>div {
+      background: #f6f5f5;
+      border: 1px solid #d3e0ea;
+      padding: 10px;
+      text-align: center;
+    }
+  </style>
+  <div style="display: grid; grid-template-columns: 50px 50px;justify-content: space-evenly">
+    <div>1</div>
+    <div>2</div>
+    <div>3</div>
+    <div>4</div>
+  </div>`}/>
+
+```html
+<div style="display: grid; grid-template-columns: 50px 50px;justify-content: space-evenly">
+  <div>1</div>
+  <div>2</div>
+  <div>3</div>
+  <div>4</div>
+</div>
+```
