@@ -2,8 +2,8 @@
 
 ## Continuous Commit Recording
 
-- 🥇 Highest record: **75** days
-- 😊 Latest record: **75** days ( **25** days to reach 🎉**100** days anniversary )
+- 🥇 Highest record: **76** days
+- 😊 Latest record: **76** days ( **24** days to reach 🎉**100** days anniversary )
 
 ## Commit Calendar
 
@@ -37,7 +37,7 @@ Sun|Mon|Tue|Wed|Thu|Fri|Sat
 Sun|Mon|Tue|Wed|Thu|Fri|Sat
 -|-|-|-|-|-|-
 -|-|-|-|-|-|1 🍺<br>[css-cheat-sheet: generate template](./node/css-cheat-sheet)
-2 🍺<br>[css-cheat-sheet: display](./node/css-cheat-sheet)|3 🍺<br>[css-cheat-sheet: position](./node/css-cheat-sheet)|4 🍺<br>[css-cheat-sheet: flex](./node/css-cheat-sheet)|5 🍺<br>[css-cheat-sheet: grid](./node/css-cheat-sheet)|6 🍺<br>[vector](./c/vector)|7 🍺<br>[LinkedList](./c/linked-list)|8<br>-
+2 🍺<br>[css-cheat-sheet: display](./node/css-cheat-sheet)|3 🍺<br>[css-cheat-sheet: position](./node/css-cheat-sheet)|4 🍺<br>[css-cheat-sheet: flex](./node/css-cheat-sheet)|5 🍺<br>[css-cheat-sheet: grid](./node/css-cheat-sheet)|6 🍺<br>[vector](./c/vector)|7 🍺<br>[LinkedList](./c/linked-list)|8 🍺<br>[HashTable](./c/hash-table)
 9<br>-|10<br>-|11<br>-|12<br>-|13<br>-|14<br>-|15<br>-
 16<br>-|17<br>-|18<br>-|19<br>-|20<br>-|21<br>-|22<br>-
 23<br>-|24<br>-|25<br>-|26<br>-|27<br>-|28<br>-|29<br>-
