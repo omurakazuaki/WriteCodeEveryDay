@@ -6,6 +6,10 @@
     "initializer_list": "c",
     "utility": "c",
     "vector": "c",
-    "sstream": "c"
+    "sstream": "c",
+    "memory": "c",
+    "optional": "c",
+    "system_error": "c",
+    "thread": "c"
   }
 }
