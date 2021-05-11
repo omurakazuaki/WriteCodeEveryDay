@@ -10,6 +10,12 @@
     "memory": "c",
     "optional": "c",
     "system_error": "c",
-    "thread": "c"
+    "thread": "c",
+    "chrono": "c",
+    "limits": "c",
+    "deque": "c",
+    "list": "c",
+    "string": "c",
+    "unordered_map": "c"
   }
 }
