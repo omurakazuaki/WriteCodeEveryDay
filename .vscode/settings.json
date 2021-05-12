@@ -16,6 +16,12 @@
     "deque": "c",
     "list": "c",
     "string": "c",
-    "unordered_map": "c"
+    "unordered_map": "c",
+    "istream": "c",
+    "ostream": "c",
+    "ratio": "c",
+    "functional": "c",
+    "tuple": "c",
+    "type_traits": "c"
   }
 }
