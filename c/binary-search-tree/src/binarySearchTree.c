@@ -44,6 +44,20 @@ Node* node_get_max(Node* p) {
   return p;
 }
 
+bool node_is_left(Node* n) {
+  Node* p = n->parent;
+  return p != NULL && p->left == n;
+}
+
+bool node_is_right(Node* n) {
+  Node* p = n->parent;
+  return p != NULL && p->right == n;
+}
+
+bool node_is_leaf(Node* n) {
+  return n->left == NULL && n->right == NULL;
+}
+
 typedef int (* Comparer)(Node*, Node*);
 
 int str_comparer(Node* a, Node* b) {
@@ -128,6 +142,13 @@ void _bst_to_array(Node* target, Node** array, int* len) {
   }
 }
 
+Node** bst_to_array(Tree* t) {
+  Node** array = malloc(t->size * sizeof(Node*));
+  int len = 0;
+  _bst_to_array(t->root, array, &len);
+  return array;
+}
+
 void bst_delete(Tree* t, void* value) {
   Node* target = bst_get(t, value);
   if (target == NULL) {
@@ -135,7 +156,7 @@ void bst_delete(Tree* t, void* value) {
   }
   bool isRoot = target->parent == NULL;
   bool isLeft = !isRoot && target->parent->left == target;
-  if (target->left == NULL && target->right == NULL) {
+  if (node_is_leaf(target)) {
     if (isRoot) {
       t->root = NULL;
     } else if (isLeft) {
@@ -171,13 +192,6 @@ void bst_delete(Tree* t, void* value) {
   }
   free(target);
   t->size--;
-}
-
-Node** bst_to_array(Tree* t) {
-  Node** array = malloc(t->size * sizeof(Node*));
-  int len = 0;
-  _bst_to_array(t->root, array, &len);
-  return array;
 }
 
 void _bst_rebalance(Tree* t, Node** array, int start, int end) {
@@ -217,8 +231,8 @@ void bst_print_node(Node* target) {
     int len = strlen((char*)p->value);
     memset(tmp + strlen(tmp), ' ', len);
     if (p->parent != NULL) {
-      if ((p->parent->left == p && p->left != prev) ||
-          (p->parent->right == p && p->right != prev)) {
+      if ((node_is_left(p) && !node_is_left(prev)) ||
+          (node_is_right(p) && !node_is_right(prev))) {
         strcat(tmp, " | ");
       } else {
         strcat(tmp, "   ");
@@ -233,14 +247,14 @@ void bst_print_node(Node* target) {
   for (int i = 0; i < strlen(tmp); i++) {
     prefix[i] = tmp[strlen(tmp) - i - 1];
   }
-  if (target->parent != NULL) {
-    if (target->parent->left == target) {
-      strcat(prefix, "  _");
-    } else {
-      strcat(prefix, " |_");
-    }
+
+  if (node_is_left(target)) {
+    strcat(prefix, "  _");
+  } else if (node_is_right(target)) {
+    strcat(prefix, " |_");
   }
-  char* suffix = target->left == NULL && target->right == NULL
+
+  char* suffix = node_is_leaf(target)
     ? ""
     : target->left != NULL ? "_|" : "_";
   printf("%s%s%s\n", prefix, (char*)target->value, suffix);
@@ -278,7 +292,7 @@ void main() {
 
   Node** array = bst_to_array(&t);
   for (int i = 0; i < t.size; i++) {
-    printf("%s\n", (char*)array[i]->value);
+    printf("%d: %s\n", i, (char*)array[i]->value);
   }
 
   bst_print_tree(&t);
