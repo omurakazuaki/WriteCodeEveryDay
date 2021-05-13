@@ -9,29 +9,34 @@ int str_comparer(void* a, void* b) {
   return strcmp((char*)a, (char*)b);
 }
 
-void merge_sort(void** array, int start, int end, Comparer comparer) {
-  int size = end - start + 1;
-  if (size == 1) {
-    return;
-  }
-  int middle = (start + end) / 2;
-  int a = start;
-  int b = middle + 1;
-  merge_sort(array, a, middle, comparer);
-  merge_sort(array, b, end, comparer);
+void merge(void** array, int left, int right, int end, Comparer comparer) {
+  int size = end - left + 1;
   void* work[size];
+  int start = left;
   for(int i = 0; i < size; i++) {
-    if (b > end || (a <= middle && comparer(array[a], array[b]) < 1)) {
-      work[i] = array[a];
-      a++;
+    if (right > end || (left <= right - 1 && comparer(array[left], array[right]) < 1)) {
+      work[i] = array[left];
+      left++;
     } else {
-      work[i] = array[b];
-      b++;
+      work[i] = array[right];
+      right++;
     }
   }
   for (int i = 0; i < size; i++) {
     array[start + i] = work[i];
   }
+}
+
+void merge_sort(void** array, int start, int end, Comparer comparer) {
+  if (start == end) {
+    return;
+  }
+  int middle = (start + end) / 2;
+  int left = start;
+  int right = middle + 1;
+  merge_sort(array, left, middle, comparer);
+  merge_sort(array, right, end, comparer);
+  merge(array, left, right, end, comparer);
   return;
 }
 
