@@ -6,8 +6,8 @@
 typedef int (* Comparer)(void*, void*);
 
 int str_comparer(void* a, void* b) {
-  char* a_val = (char*)a;
-  char* b_val = (char*)b;
+  char* a_val = a != NULL ? (char*)a : "\0";
+  char* b_val = b != NULL ? (char*)b : "\0";
   return strcmp(a_val, b_val);
 }
 
@@ -86,41 +86,32 @@ void h_sift_up(Heap* h, int index) {
   void* val = h_get(h, index);
   void* p_val = h_get(h, parent_index);
   int result = h->comparer(p_val, val);
-  if (result >= 0) {
-    return;
+  if (result < 0) {
+    h->raw[parent_index] = val;
+    h->raw[index] = p_val;
+    h_sift_up(h, parent_index);
   }
-  h->raw[parent_index] = val;
-  h->raw[index] = p_val;
-  h_sift_up(h, parent_index);
 }
 
 void h_sift_down(Heap* h, int index) {
   void* val = h_get(h, index);
   int left_index = h_left_index(index);
   void* left = h_get(h, left_index);
-  if (left == NULL) {
-    return;
-  }
   int right_index = h_right_index(index);
   void* right = h_get(h, right_index);
-  if (right == NULL || h->comparer(left, right) > 0) {
+  if (h->comparer(left, right) > 0) {
     int resultL = h->comparer(left, val);
     if (resultL > 0) {
       h->raw[left_index] = val;
       h->raw[index] = left;
       h_sift_down(h, left_index);
-      return;
     }
   } else {
-    if (right == NULL) {
-      return;
-    }
     int resultR = h->comparer(right, val);
     if (resultR > 0) {
       h->raw[right_index] = val;
       h->raw[index] = right;
       h_sift_down(h, right_index);
-      return;
     }
   }
 }
@@ -181,8 +172,8 @@ void h_print_node(Heap* h, int index) {
     int len = strlen((char*)h_get(h, parent_index));
     memset(tmp + strlen(tmp), ' ', len);
     if (h_parent_index(parent_index) > -1) {
-      if ((h_is_left(parent_index) && h_left_index(parent_index) != prev_index) ||
-          (h_is_right(parent_index) && h_right_index(parent_index) != prev_index)) {
+      if ((h_is_left(parent_index) && !h_is_left(prev_index)) ||
+          (h_is_right(parent_index) && !h_is_right(prev_index))) {
         strcat(tmp, " | ");
       } else {
         strcat(tmp, "   ");
