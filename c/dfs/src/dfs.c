@@ -94,6 +94,55 @@ Vector* dfs(char map[17][17], size_t* from, size_t* to) {
   return stack;
 }
 
+Vector* bfs_route(Vector* stack) {
+  Vector* result = v_new();
+  size_t* v = v_pop(stack);
+  v_push(result, v);
+  while (!v_is_empty(stack)) {
+    size_t* cur = v_get(result, result->size - 1);
+    size_t* next = v_pop(stack);
+    int x_delta = abs(cur[0] - next[0]);
+    int y_delta = abs(cur[1] - next[1]);
+    if ((x_delta == 1 && y_delta == 0) ||
+        (x_delta == 0 && y_delta == 1)) {
+      v_push(result, next);
+    }
+  }
+  return result;
+}
+
+Vector* bfs(char map[17][17], size_t* from, size_t* to) {
+  Vector* queue = v_new();
+  Vector* visitedVec = v_new();
+  bool visited[16][16];
+  for(size_t i = 0; i < 16; i++) {
+    for(size_t j = 0; j < 16; j++) {
+      visited[i][j] = 0;
+    }
+  }
+  visited[from[0]][from[1]] = 1;
+  v_push(queue, from);
+  while (!v_is_empty(queue)) {
+    size_t* v = v_shift(queue);
+    v_push(visitedVec, v);
+    for (size_t i = v[0] - 1; i < v[0] + 2; i++) {
+      for (size_t j = v[1] - 1; j < v[1] + 2; j++) {
+        if (i != v[0] && j != v[1]) continue;
+        if (map[i][j] == '=') continue;
+        if (visited[i][j]) continue;
+        visited[i][j] = 1;
+        size_t* pos = malloc(sizeof(size_t) * 2);
+        pos[0] = i; pos[1] = j;
+        v_push(queue, pos);
+        if (pos[0] == to[0] && pos[1] == to[1]) {
+          return bfs_route(visitedVec);
+        }
+      }
+    }
+  }
+  return bfs_route(visitedVec);
+}
+
 void main() {
   char map[17][17] = {
     "================",
@@ -109,8 +158,8 @@ void main() {
     "= ========   = =",
     "=        = === =",
     "======== = =   =",
-    "=  =   = = =====",
-    "==   =   =    g=",
+    "=g =   = = =====",
+    "==   =   =     =",
     "================"
   };
   size_t* from = malloc(sizeof(size_t) * 2);
@@ -125,16 +174,46 @@ void main() {
     }
   }
 
-  Vector* rote = dfs(map, from, to);
-  printf("size=%d\n",rote->size);
-  for (int i = 0; i < rote->size; i++) {
-    size_t* pos = v_get(rote, i);
+  Vector* route = dfs(map, from, to);
+  for (int i = 0; i < route->size; i++) {
+    size_t* pos = v_get(route, i);
     if ((from[0] == pos[0] && from[1] == pos[1]) ||
         (to[0]   == pos[0] && to[1]   == pos[1])) continue;
     map[pos[0]][pos[1]] = '*';
   }
   for (int i = 0; i < 16; i++) {
     printf("%s\n", map[i]);
+  }
+
+  printf("\n");
+
+  char map2[17][17] = {
+    "================",
+    "=s             =",
+    "= ==== ======= =",
+    "= =    =     = =",
+    "= = ======== = =",
+    "= =        =   =",
+    "= === === ==== =",
+    "=       = =  = =",
+    "= ======= == = =",
+    "= =        = = =",
+    "= ========   = =",
+    "=        = === =",
+    "======== = =   =",
+    "=g =   = = =====",
+    "==   =   =     =",
+    "================"
+  };
+  Vector* route2 = bfs(map2, from, to);
+  for (int i = 0; i < route2->size; i++) {
+    size_t* pos = v_get(route2, i);
+    if ((from[0] == pos[0] && from[1] == pos[1]) ||
+        (to[0]   == pos[0] && to[1]   == pos[1])) continue;
+    map2[pos[0]][pos[1]] = '*';
+  }
+  for (int i = 0; i < 16; i++) {
+    printf("%s\n", map2[i]);
   }
 
 }
