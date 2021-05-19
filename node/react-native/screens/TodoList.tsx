@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, ScrollView, View } from 'react-native';
 import { ListItem, FAB } from 'react-native-elements'
 import { ParamListBase, useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -26,16 +26,18 @@ export default function TodoList() {
 
   return (
     <View style={styles.container}>
-      {
-        state.list.map((l, i) => (
-          <ListItem onPress={handleClickItem(l.id)} key={i} bottomDivider>
-            <ListItem.Content>
-              <ListItem.Title>{l.title}</ListItem.Title>
-              <ListItem.Subtitle>{l.subtitle}</ListItem.Subtitle>
-            </ListItem.Content>
-          </ListItem>
-        ))
-      }
+      <ScrollView>
+        {
+          state.list.map((l, i) => (
+            <ListItem onPress={handleClickItem(l.id)} key={i} bottomDivider>
+              <ListItem.Content>
+                <ListItem.Title>{l.title}</ListItem.Title>
+                <ListItem.Subtitle>{l.subtitle}</ListItem.Subtitle>
+              </ListItem.Content>
+            </ListItem>
+          ))
+        }
+      </ScrollView>
       <FAB
         onPress={handleClickNew}
         icon={{name:'add', color: "#fff"}}
@@ -49,5 +51,5 @@ export default function TodoList() {
 const styles = StyleSheet.create({
   container: {
     height: '100%'
-  },
+  }
 });

@@ -1,7 +1,7 @@
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
-import { StyleSheet, View } from 'react-native';
+import { SafeAreaView, StyleSheet, StatusBar } from 'react-native';
 import TodoList from './screens/TodoList';
 import TodoDetail from './screens/TodoDetail';
 import TodoEditor from './screens/TodoEditor';
@@ -12,22 +12,23 @@ const Stack = createStackNavigator();
 
 export default function App() {
   return (
-    <NavigationContainer>
-      <Provider store={store}>
-        <View style={styles.container}>
-        <Stack.Navigator>
-          <Stack.Screen name="Todo List" component={TodoList} />
-          <Stack.Screen name="Todo Detail" component={TodoDetail} />
-          <Stack.Screen name="Todo Editor" component={TodoEditor} />
-        </Stack.Navigator>
-        </View>
-      </Provider>
-    </NavigationContainer>
+    <SafeAreaView style={styles.container}>
+      <NavigationContainer>
+        <Provider store={store}>
+            <Stack.Navigator>
+              <Stack.Screen name="Todo List" component={TodoList} />
+              <Stack.Screen name="Todo Detail" component={TodoDetail} />
+              <Stack.Screen name="Todo Editor" component={TodoEditor} />
+            </Stack.Navigator>
+        </Provider>
+      </NavigationContainer>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1
+    flex: 1,
+    paddingTop: StatusBar.currentHeight
   },
 });
