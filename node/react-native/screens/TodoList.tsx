@@ -1,45 +1,34 @@
 import React from 'react';
-import { View } from 'react-native';
-import { ListItem, Avatar } from 'react-native-elements'
-import { ParamListBase } from '@react-navigation/native';
+import { StyleSheet, View } from 'react-native';
+import { ListItem, FAB } from 'react-native-elements'
+import { ParamListBase, useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
+import { useDispatch, useSelector } from 'react-redux';
+import { select, TodoState } from '../slices/todoSlice';
+import { RootState } from '../app/store';
 
-const list = [
-  {
-    title: '新規TODO作成',
-    subtitle: '空のTODO編集ページに遷移'
-  },
-  {
-    title: 'TODO編集',
-    subtitle: '編集ページに遷移'
-  },
-  {
-    title: 'TODOデータを保存',
-    subtitle: 'ローカルストレージにデータを保存する'
-  },
-  {
-    title: '認証',
-    subtitle: 'ログイン時に認証する'
-  },
-  {
-    title: 'クローズ',
-    subtitle: 'スワップしてクローズする'
-  },
-];
+export default function TodoList() {
+  const navigation = useNavigation<StackNavigationProp<ParamListBase>>();
+  const state = useSelector<RootState, TodoState>(state => state.todo);
+  const dispatch = useDispatch();
 
-export default function TodoList({ navigation } : { navigation : StackNavigationProp<ParamListBase>}) {
-  const handleClick = (item: any) => {
+  const handleClickItem = (id: number | null) => {
     return () => {
-        navigation.push('Todo Detail', {
-        item
-      });
+        dispatch(select(id));
+        navigation.push('Todo Detail');
     }
   };
+
+  const handleClickNew = () => {
+    dispatch(select(null));
+    navigation.push('Todo Editor');
+  };
+
   return (
-    <View>
+    <View style={styles.container}>
       {
-        list.map((l, i) => (
-          <ListItem onPress={handleClick(l)} key={i} bottomDivider>
+        state.list.map((l, i) => (
+          <ListItem onPress={handleClickItem(l.id)} key={i} bottomDivider>
             <ListItem.Content>
               <ListItem.Title>{l.title}</ListItem.Title>
               <ListItem.Subtitle>{l.subtitle}</ListItem.Subtitle>
@@ -47,6 +36,18 @@ export default function TodoList({ navigation } : { navigation : StackNavigation
           </ListItem>
         ))
       }
+      <FAB
+        onPress={handleClickNew}
+        icon={{name:'add', color: "#fff"}}
+        color="#aaa"
+        placement="right"
+        size="small"/>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    height: '100%'
+  },
+});
