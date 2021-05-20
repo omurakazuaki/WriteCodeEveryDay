@@ -1,4 +1,7 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { Platform } from 'react-native';
+import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
+import Storage from 'react-native-storage';
+import AsyncStorage from '@react-native-community/async-storage';
 
 export interface Todo {id: number | null,　title: string, subtitle: string};
 
@@ -7,41 +10,24 @@ export interface TodoState {
   selected: Todo;
 }
 
+const storage = new Storage({
+  storageBackend: Platform.OS == 'web' ? window.localStorage : AsyncStorage,
+  enableCache: true
+});
+
 const initialState: TodoState = {
-  list: [
-    {
-      id: 0,
-      title: '新規TODO作成',
-      subtitle: '空のTODO編集ページに遷移'
-    },
-    {
-      id: 1,
-      title: 'Redux',
-      subtitle: 'reduxによる状態管理'
-    },
-    {
-      id: 2,
-      title: 'TODO編集',
-      subtitle: '編集ページに遷移'
-    },
-    {
-      id: 3,
-      title: 'TODOデータを保存',
-      subtitle: 'ローカルストレージにデータを保存する'
-    },
-    {
-      id: 4,
-      title: '認証',
-      subtitle: 'ログイン時に認証する'
-    },
-    {
-      id: 5,
-      title: 'クローズ',
-      subtitle: 'スワップしてクローズする'
-    },
-  ],
+  list: [],
   selected: {id: null, title: '', subtitle: ''},
 };
+
+const key = 'WriteCodeEveryDayReactNativeTodoList';
+
+export const fetchAllTodo = createAsyncThunk(
+  "todo/loadAllTodo",
+  async () => {
+    return await storage.load({key}) as Todo[];
+  }
+);
 
 export const todoSlice = createSlice({
   name: 'todo',
@@ -57,6 +43,7 @@ export const todoSlice = createSlice({
         state.list.push(action.payload);
         state.selected = action.payload;
       }
+      storage.save({key, data: state.list});
     },
     updateSelected: (state, action: PayloadAction<Todo>) => {
       state.selected = action.payload;
@@ -66,6 +53,11 @@ export const todoSlice = createSlice({
       state.selected = find ? {...find} : {id: null, title: '', subtitle: ''};
     }
   },
+  extraReducers: (builder) => {
+    builder.addCase(fetchAllTodo.fulfilled, (state, action) => {
+      state.list = action.payload;
+    });
+  }
 });
 
 export const { save, select, updateSelected } = todoSlice.actions;

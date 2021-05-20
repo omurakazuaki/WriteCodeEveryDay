@@ -1,11 +1,12 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { StyleSheet, ScrollView, View } from 'react-native';
 import { ListItem, FAB } from 'react-native-elements'
 import { ParamListBase, useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { useDispatch, useSelector } from 'react-redux';
-import { select, TodoState } from '../slices/todoSlice';
+import { load, select, TodoState, fetchAllTodo } from '../slices/todoSlice';
 import { RootState } from '../app/store';
+import { useCallback } from 'react';
 
 export default function TodoList() {
   const navigation = useNavigation<StackNavigationProp<ParamListBase>>();
@@ -23,6 +24,10 @@ export default function TodoList() {
     dispatch(select(null));
     navigation.push('Todo Editor');
   };
+
+  useCallback(() => {
+    dispatch(fetchAllTodo())
+  }, [dispatch]);
 
   return (
     <View style={styles.container}>
