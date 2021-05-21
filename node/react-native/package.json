@@ -8,7 +8,7 @@
     "test": "jest"
   },
   "dependencies": {
-    "@react-native-async-storage/async-storage": "^1.15.4",
+    "@react-native-async-storage/async-storage": "^1.13.0",
     "@react-native-community/async-storage": "^1.12.1",
     "@react-native-community/masked-view": "0.1.10",
     "@react-navigation/native": "^5.9.4",
@@ -40,7 +40,14 @@
     "typescript": "~4.0.0"
   },
   "jest": {
-    "preset": "react-native"
+    "preset": "react-native",
+    "moduleNameMapper": {
+      "\\.(jpg|jpeg|png|svg)$": "<rootDir>/__mocks__/fileMock.js",
+      "\\.(css|scss)$": "<rootDir>/__mocks__/styleMock.js"
+    },
+    "setupFiles": [
+      "<rootDir>/__tests__/jestSetup.js"
+    ]
   },
   "private": true
 }
