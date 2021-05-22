@@ -12,3 +12,5 @@
       link: '/category/flex'
     - label: 'Grid'
       link: '/category/grid'
+    - label: 'Shape'
+      link: '/category/shape'
