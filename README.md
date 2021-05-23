@@ -2,8 +2,8 @@
 
 ## Continuous Commit Recording
 
-- 🥇 Highest record: **90** days
-- 😊 Latest record: **90** days ( **10** days to reach 🎉**100** days anniversary )
+- 🥇 Highest record: **91** days
+- 😊 Latest record: **91** days ( **9** days to reach 🎉**100** days anniversary )
 
 ## Commit Calendar
 
@@ -40,5 +40,5 @@ Sun|Mon|Tue|Wed|Thu|Fri|Sat
 2 🍺<br>[css-cheat-sheet: display](./node/css-cheat-sheet)|3 🍺<br>[css-cheat-sheet: position](./node/css-cheat-sheet)|4 🍺<br>[css-cheat-sheet: flex](./node/css-cheat-sheet)|5 🍺<br>[css-cheat-sheet: grid](./node/css-cheat-sheet)|6 🍺<br>[vector](./c/vector)|7 🍺<br>[LinkedList](./c/linked-list)|8 🍺<br>[HashTable](./c/hash-table)
 9 🍺<br>[HashTable: chain](./c/hash-table)|10 🍺<br>[Binary Search](./c/binary-search)|11 🍺<br>[binary-search-tree](./c/binary-search-tree)|12 🍺<br>[Heap](./c/heap)|13 🍺<br>[Merge Sort](./c/merge-sort)|14 🍺<br>[Quick Sort](./c/quick-sort)|15 🍺<br>[BFS](./c/bfs)
 16 🍺<br>[DFS](./c/dfs)|17 🍺<br>[route search: bfs](./c/dfs)|18 🍺<br>[React Native](./node/react-native)|19 🍺<br>[react-native: redux](./node/react-native)|20 🍺<br>[react-native: storage](./node/react-native)|21 🍺<br>[react-native: [wip] fix jest](./node/react-native)|22 🍺<br>[css-cheat-sheet: shape](./node/css-cheat-sheet)
-23<br>-|24<br>-|25<br>-|26<br>-|27<br>-|28<br>-|29<br>-
+23 🍺<br>[react-native: [wip] fix jest](./node/react-native)|24<br>-|25<br>-|26<br>-|27<br>-|28<br>-|29<br>-
 30<br>-|31<br>-|-|-|-|-|-
