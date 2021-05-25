@@ -1,5 +1,10 @@
 # first_app
 
+## Setup
+```
+flutter pub get
+```
+
 ## Run
 
 ```
