@@ -2,8 +2,8 @@
 
 ## Continuous Commit Recording
 
-- 🥇 Highest record: **96** days
-- 😊 Latest record: **96** days ( **4** days to reach 🎉**100** days anniversary )
+- 🥇 Highest record: **97** days
+- 😊 Latest record: **97** days ( **3** days to reach 🎉**100** days anniversary )
 
 ## Commit Calendar
 
@@ -40,5 +40,5 @@ Sun|Mon|Tue|Wed|Thu|Fri|Sat
 2 🍺<br>[css-cheat-sheet: display](./node/css-cheat-sheet)|3 🍺<br>[css-cheat-sheet: position](./node/css-cheat-sheet)|4 🍺<br>[css-cheat-sheet: flex](./node/css-cheat-sheet)|5 🍺<br>[css-cheat-sheet: grid](./node/css-cheat-sheet)|6 🍺<br>[vector](./c/vector)|7 🍺<br>[LinkedList](./c/linked-list)|8 🍺<br>[HashTable](./c/hash-table)
 9 🍺<br>[HashTable: chain](./c/hash-table)|10 🍺<br>[Binary Search](./c/binary-search)|11 🍺<br>[binary-search-tree](./c/binary-search-tree)|12 🍺<br>[Heap](./c/heap)|13 🍺<br>[Merge Sort](./c/merge-sort)|14 🍺<br>[Quick Sort](./c/quick-sort)|15 🍺<br>[BFS](./c/bfs)
 16 🍺<br>[DFS](./c/dfs)|17 🍺<br>[route search: bfs](./c/dfs)|18 🍺<br>[React Native](./node/react-native)|19 🍺<br>[react-native: redux](./node/react-native)|20 🍺<br>[react-native: storage](./node/react-native)|21 🍺<br>[react-native: [wip] fix jest](./node/react-native)|22 🍺<br>[css-cheat-sheet: shape](./node/css-cheat-sheet)
-23 🍺<br>[react-native: [wip] fix jest](./node/react-native)|24 🍺<br>[flutter: first app](./dart/first_app)|25 🍺<br>[flutter: wip](./dart/first_app)|26 🍺<br>[gatuby-documents-template: build scaffold](./node/gatuby-documents-template)|27 🍺<br>[gatuby-documents-template: navigator](./node/gatuby-documents-template)|28 🍺<br>[gatuby-documents-template: code highlight](./node/gatuby-documents-template)|29<br>-
+23 🍺<br>[react-native: [wip] fix jest](./node/react-native)|24 🍺<br>[flutter: first app](./dart/first_app)|25 🍺<br>[flutter: wip](./dart/first_app)|26 🍺<br>[gatuby-documents-template: build scaffold](./node/gatuby-documents-template)|27 🍺<br>[gatuby-documents-template: navigator](./node/gatuby-documents-template)|28 🍺<br>[gatuby-documents-template: code highlight](./node/gatuby-documents-template)|29 🍺<br>[gatsby-documents-template: [wip]responsive](./node/gatuby-documents-template)
 30<br>-|31<br>-|-|-|-|-|-
