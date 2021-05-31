@@ -2,8 +2,8 @@
 
 ## Continuous Commit Recording
 
-- 🥇 Highest record: **98** days
-- 😊 Latest record: **98** days ( **2** days to reach 🎉**100** days anniversary )
+- 🥇 Highest record: **99** days
+- 😊 Latest record: **99** days ( **1** days to reach 🎉**100** days anniversary )
 
 ## Commit Calendar
 
@@ -41,4 +41,4 @@ Sun|Mon|Tue|Wed|Thu|Fri|Sat
 9 🍺<br>[HashTable: chain](./c/hash-table)|10 🍺<br>[Binary Search](./c/binary-search)|11 🍺<br>[binary-search-tree](./c/binary-search-tree)|12 🍺<br>[Heap](./c/heap)|13 🍺<br>[Merge Sort](./c/merge-sort)|14 🍺<br>[Quick Sort](./c/quick-sort)|15 🍺<br>[BFS](./c/bfs)
 16 🍺<br>[DFS](./c/dfs)|17 🍺<br>[route search: bfs](./c/dfs)|18 🍺<br>[React Native](./node/react-native)|19 🍺<br>[react-native: redux](./node/react-native)|20 🍺<br>[react-native: storage](./node/react-native)|21 🍺<br>[react-native: [wip] fix jest](./node/react-native)|22 🍺<br>[css-cheat-sheet: shape](./node/css-cheat-sheet)
 23 🍺<br>[react-native: [wip] fix jest](./node/react-native)|24 🍺<br>[flutter: first app](./dart/first_app)|25 🍺<br>[flutter: wip](./dart/first_app)|26 🍺<br>[gatuby-documents-template: build scaffold](./node/gatuby-documents-template)|27 🍺<br>[gatuby-documents-template: navigator](./node/gatuby-documents-template)|28 🍺<br>[gatuby-documents-template: code highlight](./node/gatuby-documents-template)|29 🍺<br>[gatsby-documents-template: [wip]responsive](./node/gatuby-documents-template)
-30 🍺<br>[gatsby-theme: adjust workspace](./node/gatuby-documents-template)|31<br>-|-|-|-|-|-
+30 🍺<br>[gatsby-theme: adjust workspace](./node/gatuby-documents-template)|31 🍺<br>[gatsby-themes: adjust](./node/gatuby-documents-template)|-|-|-|-|-
