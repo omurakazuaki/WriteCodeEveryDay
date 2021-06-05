@@ -2,8 +2,8 @@
 
 ## Continuous Commit Recording
 
-- 🥇 Highest record: **103** days
-- 😊 Latest record: **103** days ( **262** days to reach 🎉**365** days anniversary )
+- 🥇 Highest record: **104** days
+- 😊 Latest record: **104** days ( **261** days to reach 🎉**365** days anniversary )
 
 ## Commit Calendar
 
@@ -45,7 +45,7 @@ Sun|Mon|Tue|Wed|Thu|Fri|Sat
 #### 6
 Sun|Mon|Tue|Wed|Thu|Fri|Sat
 -|-|-|-|-|-|-
--|-|1 🍺<br>[nextjs](./node/nextjs-blog)|2 🍺<br>[path2github-vsce: Update dependent packages](./node/path2GithubVsce)|3 🍺<br>[gatsby-themes: adjust design](./node/gatuby-documents-template)|4 🍺<br>[vuejs: getting started](./node/vuejs)|5<br>-
+-|-|1 🍺<br>[nextjs](./node/nextjs-blog)|2 🍺<br>[path2github-vsce: Update dependent packages](./node/path2GithubVsce)|3 🍺<br>[gatsby-themes: adjust design](./node/gatuby-documents-template)|4 🍺<br>[vuejs: getting started](./node/vuejs)|5 🍺<br>[gatsby-theme: blog start](./node/gatuby-documents-template)
 6<br>-|7<br>-|8<br>-|9<br>-|10<br>-|11<br>-|12<br>-
 13<br>-|14<br>-|15<br>-|16<br>-|17<br>-|18<br>-|19<br>-
 20<br>-|21<br>-|22<br>-|23<br>-|24<br>-|25<br>-|26<br>-
