@@ -1,6 +1,7 @@
 import Layout from '../../components/layout'
 import { getAllPostIds, getPostData } from '../../lib/posts'
 import Head from 'next/head'
+import Link from 'next/link'
 import Date from '../../components/date'
 import utilStyles from '../../styles/utils.module.css'
 
@@ -14,6 +15,11 @@ export default function Post({ postData }) {
         <h1 className={utilStyles.headingXl}>{postData.title}</h1>
         <div className={utilStyles.lightText}>
           <Date dateString={postData.date} />
+        </div>
+        <div className={utilStyles.lightText}>
+          {
+            postData.tags.map(tag => <Link href={`/tags/${tag}`}><a style={{marginRight: 8}}>{tag}</a></Link>)
+          }
         </div>
         <div dangerouslySetInnerHTML={{ __html: postData.contentHtml }} />
       </article>
