@@ -18,7 +18,7 @@ export default function Post({ postData }) {
         </div>
         <div className={utilStyles.lightText}>
           {
-            postData.tags.map(tag => <Link href={`/tags/${tag}`}><a style={{marginRight: 8}}>{tag}</a></Link>)
+            postData.tags.map(tag => <Link key={tag} href={`/tags/${tag}`}><a style={{marginRight: 8}}>{tag}</a></Link>)
           }
         </div>
         <div dangerouslySetInnerHTML={{ __html: postData.contentHtml }} />

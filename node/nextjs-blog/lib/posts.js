@@ -67,3 +67,21 @@ export async function getPostData(id) {
     ...matterResult.data
   }
 }
+
+export function getAllTagIds() {
+
+};
+
+
+export function getTagData(id) {
+  const fileNames = fs.readdirSync(postsDirectory);
+  const posts = fileNames.map(fileName => {
+    const fileContents = fs.readFileSync(path.join(postsDirectory, fileName), 'utf8');
+    const matterResult = matter(fileContents);
+    return {
+      postName: fileName.replace(/\.md$/, ''),
+      tags: matterResult.data.tags
+    };
+  }).filter(tags.includes(id));
+  return { id, posts };
+};
