@@ -69,7 +69,16 @@ export async function getPostData(id) {
 }
 
 export function getAllTagIds() {
-
+  const fileNames = fs.readdirSync(postsDirectory);
+  return fileNames.reduce((acc, fileName) => {
+    const fileContents = fs.readFileSync(path.join(postsDirectory, fileName), 'utf8');
+    const matterResult = matter(fileContents);
+    return acc.concat(matterResult.data.tags);
+  }, []).map(val => ({
+    params: {
+      id: val
+    }
+  }));
 };
 
 
@@ -78,10 +87,13 @@ export function getTagData(id) {
   const posts = fileNames.map(fileName => {
     const fileContents = fs.readFileSync(path.join(postsDirectory, fileName), 'utf8');
     const matterResult = matter(fileContents);
+    console.log(matterResult.data.tags, [id])
     return {
-      postName: fileName.replace(/\.md$/, ''),
+      id: fileName.replace(/\.md$/, ''),
+      title: matterResult.data.title,
       tags: matterResult.data.tags
     };
-  }).filter(tags.includes(id));
+  }).filter(({tags}) => tags.includes(id));
+  console.log(posts);
   return { id, posts };
 };

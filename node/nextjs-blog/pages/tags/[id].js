@@ -13,17 +13,13 @@ export default function Tag({ tagData }) {
         <title>{tagData.id}</title>
       </Head>
       <section className={`${utilStyles.headingMd} ${utilStyles.padding1px}`}>
-        <h2 className={utilStyles.headingLg}>Blog</h2>
+        <h2 className={utilStyles.headingLg}>Tag: {tagData.id}</h2>
         <ul className={utilStyles.list}>
-          {tagData.posts.map(({ id, date, title }) => (
+          {tagData.posts.map(({ id, title }) => (
             <li className={utilStyles.listItem} key={id}>
               <Link href={`/posts/${id}`}>
-                <a>{id}</a>
+                <a>{title}</a>
               </Link>
-              <br />
-              <small className={utilStyles.lightText}>
-                <Date dateString={date} />
-              </small>
             </li>
           ))}
         </ul>
