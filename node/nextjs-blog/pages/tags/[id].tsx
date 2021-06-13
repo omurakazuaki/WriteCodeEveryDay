@@ -2,7 +2,6 @@ import Layout from '../../components/layout'
 import { getTagData, getAllTagIds } from '../../lib/posts'
 import Head from 'next/head'
 import Link from 'next/link'
-import Date from '../../components/date'
 import utilStyles from '../../styles/utils.module.css'
 
 
