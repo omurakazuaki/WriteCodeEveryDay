@@ -4,8 +4,17 @@ import Head from 'next/head'
 import Link from 'next/link'
 import Date from '../../components/date'
 import utilStyles from '../../styles/utils.module.css'
+import { MDXProvider } from "@mdx-js/react"
+import unified from 'unified'
+import parse from 'remark-parse'
+import remark2react from 'remark-react'
 
-export default function Post({ postData }) {
+export default function Post({ postData, content }) {
+  const components = {
+    h2: props => <h2 id={props.children} style={{paddingTop: 32, paddingBottom: 8, border: 0, borderBottom: 1, borderStyle: 'solid', borderColor: '#b0b0bb'}} {...props}/>,
+    h3: props => <h3 id={props.children} style={{paddingTop: 16}} {...props}/>,
+  };
+
   return (
     <Layout>
       <Head>
@@ -21,7 +30,12 @@ export default function Post({ postData }) {
             postData.tags.map(tag => <Link key={tag} href={`/tags/${tag}`}><a style={{marginRight: 8}}>{tag}</a></Link>)
           }
         </div>
-        <div dangerouslySetInnerHTML={{ __html: postData.contentHtml }} />
+        <MDXProvider components={components}>
+          {unified()
+            .use(parse)
+            .use(remark2react)
+            .processSync(postData.markdown).result}
+        </MDXProvider>
       </article>
     </Layout>
   )
