@@ -2,8 +2,8 @@
 
 ## Continuous Commit Recording
 
-- 🥇 Highest record: **117** days
-- 😊 Latest record: **117** days ( **248** days to reach 🎉**365** days anniversary )
+- 🥇 Highest record: **118** days
+- 😊 Latest record: **118** days ( **247** days to reach 🎉**365** days anniversary )
 
 ## Commit Calendar
 
@@ -47,6 +47,6 @@ Sun|Mon|Tue|Wed|Thu|Fri|Sat
 -|-|-|-|-|-|-
 -|-|1 🍺<br>[nextjs](./node/nextjs-blog)|2 🍺<br>[path2github-vsce: Update dependent packages](./node/path2GithubVsce)|3 🍺<br>[gatsby-themes: adjust design](./node/gatuby-documents-template)|4 🍺<br>[vuejs: getting started](./node/vuejs)|5 🍺<br>[gatsby-theme: blog start](./node/gatuby-documents-template)
 6 🍺<br>[gatsby-theme: blog header](./node/gatuby-documents-template)|7 🍺<br>[gatsby-theme: blog article base](./node/gatuby-documents-template)|8 🍺<br>[gatsby-theme: blog adjust article style](./node/gatuby-documents-template)|9 🍺<br>[nextjs: customize page](./node/nextjs-blog)|10 🍺<br>[elasticsearch: getting started](./node/elasticsearch)|11 🍺<br>[nextjs: wip customize](./node/nextjs-blog)|12 🍺<br>[nextjs: tag page](./node/nextjs-blog)
-13 🍺<br>[nextjs: typescript](./node/nextjs-blog)|14 🍺<br>[nextjs: export](./node/nextjs-blog)|15 🍺<br>[nextjs: wip mdx](./node/nextjs-blog)|16 🍺<br>[nextjs: wip mdx](./node/nextjs-mdx)|17 🍺<br>[electron: getting started](./node/electron)|18 🍺<br>[electron: react](./node/electron)|19<br>-
+13 🍺<br>[nextjs: typescript](./node/nextjs-blog)|14 🍺<br>[nextjs: export](./node/nextjs-blog)|15 🍺<br>[nextjs: wip mdx](./node/nextjs-blog)|16 🍺<br>[nextjs: wip mdx](./node/nextjs-mdx)|17 🍺<br>[electron: getting started](./node/electron)|18 🍺<br>[electron: react](./node/electron)|19 🍺<br>[Web Components](./node/WebComponents)
 20<br>-|21<br>-|22<br>-|23<br>-|24<br>-|25<br>-|26<br>-
 27<br>-|28<br>-|29<br>-|30<br>-|-|-|-
