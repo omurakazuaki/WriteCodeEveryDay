@@ -1,0 +1,15 @@
+version: '3.8'
+x-logging:
+  &default-logging
+  options:
+    max-size: '12m'
+    max-file: '5'
+  driver: json-file
+
+services:
+  deno:
+    image: denoland/deno:latest
+    tty: true
+    env_file: .env
+    volumes:
+      - ./:${APP_CODE_PATH_CONTAINER}${APP_CODE_CONTAINER_FLAG}
