@@ -47,6 +47,28 @@ export default function Home() {
             </a>
           </Link>
 
+          <Link href="/transition">
+            <a
+              className="p-6 mt-6 text-left border w-96 rounded-xl hover:text-blue-600 focus:text-blue-600 bg-white shadow-md"
+            >
+              <h3 className="text-2xl font-bold">Transition &rarr;</h3>
+              <p className="mt-4 text-xl">
+                Learn transition with TailWind
+              </p>
+            </a>
+          </Link>
+
+          <Link href="/animation">
+            <a
+              className="p-6 mt-6 text-left border w-96 rounded-xl hover:text-blue-600 focus:text-blue-600 bg-white shadow-md"
+            >
+              <h3 className="text-2xl font-bold">Animation &rarr;</h3>
+              <p className="mt-4 text-xl">
+                Learn Animation with TailWind
+              </p>
+            </a>
+          </Link>
+
         </div>
       </main>
 

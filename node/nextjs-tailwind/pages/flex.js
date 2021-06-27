@@ -1,4 +1,4 @@
-import Head from 'next/head'
+import Link from 'next/link'
 
 export default function Flex() {
   return (
@@ -44,7 +44,7 @@ export default function Flex() {
         <div className="p-4 m-4 bg-gray-50 border border-gray-300 order-2">3</div>
         <div className="p-4 m-4 bg-gray-50 border border-gray-300 order-1">4</div>
       </div>
-
+    <Link href="/"><a className="text-indigo-500 hover:underline">Home</a></Link>
     </div>
   )
 }
