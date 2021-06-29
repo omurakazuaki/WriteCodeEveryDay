@@ -69,6 +69,17 @@ export default function Home() {
             </a>
           </Link>
 
+
+          <Link href="/postcss">
+            <a
+              className="p-6 mt-6 text-left border w-96 rounded-xl hover:text-blue-600 focus:text-blue-600 bg-white shadow-md"
+            >
+              <h3 className="text-2xl font-bold">PostCSS &rarr;</h3>
+              <p className="mt-4 text-xl">
+                See <code>./components/components.css</code>
+              </p>
+            </a>
+          </Link>
         </div>
       </main>
 

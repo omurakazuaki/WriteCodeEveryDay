@@ -1,6 +1,6 @@
 import Link from 'next/link'
 
-export default function Flex() {
+export default function Transition() {
   return (
     <div className="flex flex-col mx-auto max-w-md mt-8 p-16 border shadow-md">
       <h1>Transition</h1>

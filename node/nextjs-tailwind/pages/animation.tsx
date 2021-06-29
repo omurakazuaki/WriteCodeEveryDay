@@ -1,6 +1,6 @@
 import Link from 'next/link'
 
-export default function Flex() {
+export default function Animation() {
   return (
     <div className="flex flex-col mx-auto justify-center max-w-sm mt-8 p-16 border shadow-md">
       <h1>Animation</h1>
