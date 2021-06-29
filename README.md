@@ -2,8 +2,8 @@
 
 ## Continuous Commit Recording
 
-- 🥇 Highest record: **127** days
-- 😊 Latest record: **127** days ( **238** days to reach 🎉**365** days anniversary )
+- 🥇 Highest record: **128** days
+- 😊 Latest record: **128** days ( **237** days to reach 🎉**365** days anniversary )
 
 ## Commit Calendar
 
@@ -49,4 +49,4 @@ Sun|Mon|Tue|Wed|Thu|Fri|Sat
 6 🍺<br>[gatsby-theme: blog header](./node/gatuby-documents-template)|7 🍺<br>[gatsby-theme: blog article base](./node/gatuby-documents-template)|8 🍺<br>[gatsby-theme: blog adjust article style](./node/gatuby-documents-template)|9 🍺<br>[nextjs: customize page](./node/nextjs-blog)|10 🍺<br>[elasticsearch: getting started](./node/elasticsearch)|11 🍺<br>[nextjs: wip customize](./node/nextjs-blog)|12 🍺<br>[nextjs: tag page](./node/nextjs-blog)
 13 🍺<br>[nextjs: typescript](./node/nextjs-blog)|14 🍺<br>[nextjs: export](./node/nextjs-blog)|15 🍺<br>[nextjs: wip mdx](./node/nextjs-blog)|16 🍺<br>[nextjs: wip mdx](./node/nextjs-mdx)|17 🍺<br>[electron: getting started](./node/electron)|18 🍺<br>[electron: react](./node/electron)|19 🍺<br>[Web Components](./node/WebComponents)
 20 🍺<br>[web components: react](./node/WebComponents)|21 🍺<br>[deno: alephjs](./deno/alephjs)|22 🍺<br>[vite](./node/vite-project)|23 🍺<br>[tailwindcss](./node/tailwindcss)|24 🍺<br>[tailwind: react](./node/react-tailwindow)|25 🍺<br>[tailwind: nextjs](./node/nextjs-tailwind)|26 🍺<br>[tailwind: flex](./node/nextjs-tailwind)
-27 🍺<br>[tailwind: Transitions and Animation](./node/nextjs-tailwind)|28 🍺<br>[tailwind: nextjs typescript](./node/nextjs-tailwind)|29<br>-|30<br>-|-|-|-
+27 🍺<br>[tailwind: Transitions and Animation](./node/nextjs-tailwind)|28 🍺<br>[tailwind: nextjs typescript](./node/nextjs-tailwind)|29 🍺<br>[tailwind: postcss](./node/nextjs-tailwind)|30<br>-|-|-|-
