@@ -1,0 +1,14 @@
+{
+  "name": "stackblitz",
+  "version": "1.0.0",
+  "description": "https://stackblitz.com/edit/nextjs-hwmqhp?devtoolsheight=33&file=pages/index.tsx",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@stackblitz/sdk": "^1.5.2"
+  }
+}
