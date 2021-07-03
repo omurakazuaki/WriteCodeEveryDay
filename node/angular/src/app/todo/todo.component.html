@@ -1,1 +1,13 @@
-<p>todo works!</p>
+<h2>Todo List</h2>
+
+<div *ngFor="let todo of todoList">
+  <h3>
+    {{ todo.title }}
+  </h3>
+  <p *ngIf="todo.description">
+    Description: {{ todo.description }}
+  </p>
+  <button (click)="onTest()">
+    Test
+  </button>
+</div>
