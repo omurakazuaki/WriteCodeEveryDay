@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { Todo, getTodoList } from '../service/todo-service';
 
 @Component({
   selector: 'app-todo',
@@ -6,14 +7,12 @@ import { Component, OnInit } from '@angular/core';
   styleUrls: ['./todo.component.scss']
 })
 export class TodoComponent implements OnInit {
-  todoList = [
-    {title: 'test', description: 'This is a test todo.'},
-    {title: 'Tel', description: 'This is a test todo.'},
-  ];
+  todoList: Todo[]|undefined;
 
   constructor() { }
 
   ngOnInit(): void {
+    this.todoList = getTodoList();
   }
 
   onTest() {
