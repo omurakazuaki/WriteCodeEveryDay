@@ -1,15 +1,20 @@
 <h2>Todo List</h2>
 
 <div *ngIf="todoList">
-  <div *ngFor="let todo of todoList">
-    <h3>
-      <a [routerLink]="['/todo', todo.id]">{{ todo.title }}</a>
-    </h3>
-    <p *ngIf="todo.description">
-      Description: {{ todo.description }}
-    </p>
-    <button (click)="onTest()">
-      Test
-    </button>
-  </div>
+  <ul *ngFor="let todo of todoList">
+    <li [ngClass]="{'done': todo.done}">
+      <div class="title">
+        <input type="checkbox"
+          [id]="todo.id"
+          [checked]="todo.done"
+          (change)="onChangeDone($event, todo)"/>
+        <h3>
+          <a [routerLink]="['/todo', todo.id]">{{ todo.title }}</a>
+        </h3>
+      </div>
+      <p *ngIf="todo.description">
+        Description: {{ todo.description }}
+      </p>
+    </li>
+  </ul>
 </div>

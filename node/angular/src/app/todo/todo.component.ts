@@ -16,8 +16,10 @@ export class TodoComponent implements OnInit {
     this.todoList = this.todoService.getTodoList();
   }
 
-  onTest() {
-    alert('test');
+  onChangeDone(event: any, todo: Todo) {
+    console.log(event.target.checked)
+    this.todoService.setDone(todo.id, event.target.checked);
+    this.todoList = this.todoService.getTodoList();
   }
 
 }
