@@ -20,7 +20,7 @@ export class TodoDetailComponent implements OnInit {
     const queryParams = this.route.snapshot.queryParamMap;
     const id =  Number(routeParams.get('id'));
     this.edit = queryParams.has('edit');
-    this.todo = id
+    this.todo = id !== -1
       ? this.todoService.getTodo(id)
       : { title: '', description: '', done: false };
   }

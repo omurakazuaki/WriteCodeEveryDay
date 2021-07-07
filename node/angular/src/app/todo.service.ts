@@ -23,7 +23,7 @@ export class TodoService {
     return Object.assign({}, this.todoList.find(t => t.id === id));
   }
   setDone(id: number, done: boolean) {
-    const todo = this.getTodo(id);
+    const todo = this.todoList.find(t => t.id === id);
     if (todo !== undefined) {
       todo.done = done;
     }
