@@ -5,7 +5,6 @@
     <li [ngClass]="{'done': todo.done}">
       <div class="title">
         <input type="checkbox"
-          [id]="todo.id"
           [checked]="todo.done"
           (change)="onChangeDone($event, todo)"/>
         <h3>
@@ -17,4 +16,5 @@
       </p>
     </li>
   </ul>
+  <button [routerLink]="['/todo', -1]" [queryParams]="{edit: ''}">New</button>
 </div>

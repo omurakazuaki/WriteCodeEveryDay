@@ -18,8 +18,10 @@ export class TodoComponent implements OnInit {
 
   onChangeDone(event: any, todo: Todo) {
     console.log(event.target.checked)
-    this.todoService.setDone(todo.id, event.target.checked);
-    this.todoList = this.todoService.getTodoList();
+    if (todo.id) {
+      this.todoService.setDone(todo.id, event.target.checked);
+      this.todoList = this.todoService.getTodoList();
+    }
   }
 
 }

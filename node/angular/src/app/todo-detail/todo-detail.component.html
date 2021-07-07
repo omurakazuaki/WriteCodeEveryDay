@@ -1,5 +1,25 @@
 <div *ngIf="todo">
-  <h1>{{ todo.title }}</h1>
-  <p>{{ todo.description }}</p>
+  <div *ngIf="!edit">
+    <h1>{{ todo.title }}</h1>
+    <p>{{ todo.description }}</p>
+    <div>
+      <button (click)="onEdit()">Edit</button>
+    </div>
+  </div>
+  <div *ngIf="edit">
+    <div>
+      <label>Title</label>
+      <input type="text" [(ngModel)]="todo.title"/>
+    </div>
+    <div>
+      <label>Description</label>
+      <input type="text" [(ngModel)]="todo.description"/>
+    </div>
+    <div>
+      <button type="submit" (click)="onSave()">Save</button>
+    </div>
+  </div>
+</div>
+<div>
   <a [routerLink]="['/todo']">back</a>
 </div>
