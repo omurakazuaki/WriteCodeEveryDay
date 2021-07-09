@@ -29,4 +29,5 @@ Route.get('/hello/:name', async ({ params }) => {
 })
 
 Route.get('/todo', 'TodoController.getTodoList')
+Route.post('/todo', 'TodoController.save')
 Route.get('/todo/:id', 'TodoController.getTodo')
