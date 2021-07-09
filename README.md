@@ -2,8 +2,8 @@
 
 ## Continuous Commit Recording
 
-- 🥇 Highest record: **137** days
-- 😊 Latest record: **137** days ( **228** days to reach 🎉**365** days anniversary )
+- 🥇 Highest record: **138** days
+- 😊 Latest record: **138** days ( **227** days to reach 🎉**365** days anniversary )
 
 ## Commit Calendar
 
@@ -54,7 +54,7 @@ Sun|Mon|Tue|Wed|Thu|Fri|Sat
 Sun|Mon|Tue|Wed|Thu|Fri|Sat
 -|-|-|-|-|-|-
 -|-|-|-|1 🍺<br>[StackBlitz](./node/stackblitz)|2 🍺<br>[angular](./node/angular)|3 🍺<br>[angular: getting started](./node/angular)
-4 🍺<br>[angular: Routing](./node/angular)|5 🍺<br>[angular: service](./node/angular)|6 🍺<br>[angular: event binding](./node/angular)|7 🍺<br>[angular: form](./node/angular)|8 🍺<br>[Adonis](./node/adonis)|9<br>-|10<br>-
+4 🍺<br>[angular: Routing](./node/angular)|5 🍺<br>[angular: service](./node/angular)|6 🍺<br>[angular: event binding](./node/angular)|7 🍺<br>[angular: form](./node/angular)|8 🍺<br>[Adonis](./node/adonis)|9 🍺<br>[adonis: POST](./node/adonis)|10<br>-
 11<br>-|12<br>-|13<br>-|14<br>-|15<br>-|16<br>-|17<br>-
 18<br>-|19<br>-|20<br>-|21<br>-|22<br>-|23<br>-|24<br>-
 25<br>-|26<br>-|27<br>-|28<br>-|29<br>-|30<br>-|31<br>-
